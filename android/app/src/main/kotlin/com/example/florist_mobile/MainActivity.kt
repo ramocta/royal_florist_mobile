@@ -1,4 +1,4 @@
-package com.example.royal_florist_applications
+package com.example.florist_mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

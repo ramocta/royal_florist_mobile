@@ -1,6 +1,6 @@
 {
-    "name": "royal_florist_applications",
-    "short_name": "royal_florist_applications",
+    "name": "florist_mobile",
+    "short_name": "florist_mobile",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

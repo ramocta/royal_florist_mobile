@@ -1,7 +1,7 @@
 ﻿// Kolom cari + chip filter
 
 import 'package:flutter/material.dart';
-import '../../core/app_colors.dart';
+import '../../core/shared/app_colors.dart';
 
 /// Kolom pencarian + chip filter. Chip yang punya sub-kategori
 /// menampilkan dropdown (mis. Bucket -> Bucket Satin, Bucket Uang, ...).

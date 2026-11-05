@@ -1,7 +1,7 @@
 ﻿// Kartu satu produk + tombol Tersedia/Tidak
 
 import 'package:flutter/material.dart';
-import '../../core/app_colors.dart';
+import '../../core/shared/app_colors.dart';
 import '../common/asset_icon.dart';
 
 /// Kartu produk. Dua mode:

@@ -1,7 +1,7 @@
 ﻿// Navigasi bawah 5 menu
 
 import 'package:flutter/material.dart';
-import '../../core/app_colors.dart';
+import '../../core/shared/app_colors.dart';
 import 'asset_icon.dart';
 
 class BottomNavBar extends StatelessWidget {

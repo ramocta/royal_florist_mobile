@@ -1,7 +1,7 @@
 ﻿// Grafik batang penjualan (fl_chart)
 
 import 'package:flutter/material.dart';
-import '../../core/app_colors.dart';
+import '../../core/shared/app_colors.dart';
 
 class GrafikPenjualan extends StatelessWidget {
   const GrafikPenjualan({

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'auth/auth_provider.dart';
 import 'auth/login_page.dart';
-import 'core/app_theme.dart';
+import 'core/shared/app_theme.dart';
 import 'pages/beranda/beranda_page.dart';
 import 'pages/stok/update_stok_page.dart';
 

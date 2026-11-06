@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../core/app_colors.dart';
+import '../core/shared/app_colors.dart';
 import 'auth_provider.dart';
 
 class LoginPage extends StatefulWidget {

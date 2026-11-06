@@ -1,7 +1,7 @@
 ﻿// Kartu total pesanan + pendapatan hari ini
 
 import 'package:flutter/material.dart';
-import '../../core/app_colors.dart';
+import '../../core/shared/app_colors.dart';
 
 class InfoHariIniCard extends StatelessWidget {
   const InfoHariIniCard({

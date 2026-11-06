@@ -1,6 +1,6 @@
 ﻿// Figma: Update Stok Barang (semua varian filter/dropdown)
 import 'package:flutter/material.dart';
-import '../../core/app_colors.dart';
+import '../../core/shared/app_colors.dart';
 import '../../widgets/common/asset_icon.dart';
 import '../../widgets/common/bottom_nav_bar.dart';
 import '../../widgets/common/search_filter_bar.dart';

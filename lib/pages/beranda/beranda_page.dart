@@ -1,6 +1,6 @@
 ﻿// Figma: Beranda
 import 'package:flutter/material.dart';
-import '../../core/app_colors.dart';
+import '../../core/shared/app_colors.dart';
 import '../../widgets/beranda/grafik_penjualan.dart';
 import '../../widgets/beranda/info_hari_ini_card.dart';
 import '../../widgets/common/asset_icon.dart';

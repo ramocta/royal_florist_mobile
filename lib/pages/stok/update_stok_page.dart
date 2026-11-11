@@ -1,10 +1,23 @@
-﻿// Figma: Update Stok Barang (semua varian filter/dropdown)
 import 'package:flutter/material.dart';
-import '../../core/shared/app_colors.dart';
-import '../../widgets/common/asset_icon.dart';
+import 'package:provider/provider.dart';
+
+import '../../models/produk_model.dart';
+import '../../providers/stok_provider.dart';
+import '../../widgets/beranda/beranda_style.dart';
+import '../../widgets/beranda/muncul.dart';
 import '../../widgets/common/bottom_nav_bar.dart';
-import '../../widgets/common/search_filter_bar.dart';
+import '../../widgets/common/info_snack.dart';
+import '../../widgets/common/latar_pink.dart';
+import '../../widgets/stok/filter_kategori.dart';
+import '../../widgets/stok/kelola_ketersediaan_dialog.dart';
+import '../../widgets/stok/kelola_stok_dialog.dart';
+import '../../widgets/stok/konfirmasi_hapus.dart';
+import '../../widgets/stok/peringatan_stok_dialog.dart';
 import '../../widgets/stok/produk_card.dart';
+import '../../widgets/stok/status_filter_sheet.dart';
+import '../../widgets/stok/stok_header.dart';
+import '../../widgets/stok/stok_search_bar.dart';
+import 'detail_produk_page.dart';
 
 class UpdateStokPage extends StatefulWidget {
   const UpdateStokPage({super.key});
@@ -14,124 +27,177 @@ class UpdateStokPage extends StatefulWidget {
 }
 
 class _UpdateStokPageState extends State<UpdateStokPage> {
-  static const _semua = 'Semua';
+  late final StokProvider _p;
 
-  // chip filter -> sub-kategori (dropdown)
-  static const _filters = {
-    'Bucket': ['Bucket Satin', 'Bucket Uang', 'Bucket Snack', 'Bucket Fresh Flower'],
-    'Hantaran': ['Hantaran Box Akrilik', 'Hantaran Box Fiber'],
-    'Papan Bunga': ['Papan Bunga Kecil', 'Papan Bunga Besar'],
-  };
+  @override
+  void initState() {
+    super.initState();
+    _p = context.read<StokProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _p.mulai());
+  }
 
-  // TODO: ganti data dummy ini dengan stok_provider / stok_service
-  static const _img = 'assets/images';
-  static const Map<String, List<_Produk>> _data = {
-    _semua: [
-      _Produk('Bunga Aster', '$_img/aster.png', stok: 30),
-      _Produk('Bunga Lily', '$_img/lily.png', stok: 30),
-      _Produk('Bunga Sedap malam', '$_img/sedap-malam.png', stok: 30),
-      _Produk('Baby Breath', '$_img/baby-breath.png', stok: 30),
-    ],
-    'Bucket Satin': [
-      _Produk('Bucket Satin Pink', '$_img/bukcet-satin-pink.png'),
-      _Produk('Bucket Satin Merah', '$_img/bucket-satin-merah.png'),
-      _Produk('Bucket Satin Putih', '$_img/bukcet-satin-putih.png'),
-    ],
-    'Bucket Uang': [
-      _Produk('Bucket Uang 5 Lembar', '$_img/bucket-uang1.png'),
-      _Produk('Bucket Uang 10 Lembar', '$_img/bucket-uang2.png'),
-      _Produk('Bucket Uang 15 Lembar', '$_img/bucket-uang3.png'),
-    ],
-  };
+  @override
+  void dispose() {
+    _p.berhenti();
+    super.dispose();
+  }
 
-  String _filter = _semua;
-  String? _opsi;
-  String _query = '';
-  final Map<String, bool> _tersedia = {};
+  Future<void> _kelola(Produk p) async {
+    final berhasil = await showDialog<bool>(
+      context: context,
+      builder: (_) => p.pakaiStok
+          ? KelolaStokDialog(produk: p)
+          : KelolaKetersediaanDialog(produk: p),
+    );
+    if (berhasil == true && mounted)
+      tampilkanInfo(context, '${p.nama} berhasil diperbarui');
+  }
 
-  List<_Produk> get _items {
-    final list = _data[_opsi ?? _semua] ?? const <_Produk>[];
-    if (_query.isEmpty) return list;
-    return list.where((p) => p.nama.toLowerCase().contains(_query.toLowerCase())).toList();
+  Future<void> _form([Produk? p]) async {
+    final pesan = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => DetailProdukPage(produk: p)),
+    );
+    if (pesan != null && mounted) tampilkanInfo(context, pesan);
+  }
+
+  Future<void> _hapus(Produk p) async {
+    if (!await konfirmasiHapus(context, p) || !mounted) return;
+    final err = await _p.hapus(p);
+    if (!mounted) return;
+    tampilkanInfo(context, err ?? '${p.nama} dihapus', galat: err != null);
+  }
+
+  Future<void> _filterStatus() async {
+    final pilihan = await tampilkanFilterStatus(context, _p.statusFilter);
+    if (pilihan != null) _p.ubahStatus(pilihan);
   }
 
   @override
   Widget build(BuildContext context) {
-    final items = _items;
+    final p = context.watch<StokProvider>();
+    final daftar = p.tampil;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        titleSpacing: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-        title: const Text('Update Stok Barang'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              // TODO: buka NotifikasiDialog
-            },
-            icon: const AssetIcon('assets/icons/lonceng1.png',
-                size: 22, fallback: Icons.notifications),
-          ),
-        ],
-      ),
+      backgroundColor: BerandaStyle.latarBawah,
       bottomNavigationBar: const BottomNavBar(currentIndex: 1),
-      body: Column(
-        children: [
-          SearchFilterBar(
-            filters: _filters,
-            selectedFilter: _filter,
-            selectedOption: _opsi,
-            onSearch: (q) => setState(() => _query = q),
-            onFilterSelected: (f, o) => setState(() {
-              _filter = f;
-              _opsi = o;
-            }),
-          ),
-          Expanded(
-            child: items.isEmpty
-                ? const Center(
-                    child: Text('Belum ada produk',
-                        style: TextStyle(fontSize: 13, color: AppColors.muted)),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                    itemCount: items.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
-                    itemBuilder: (_, i) {
-                      final p = items[i];
-                      if (p.stok != null) {
-                        return ProdukCard.stok(
-                          nama: p.nama,
-                          gambar: p.gambar,
-                          stok: p.stok!,
-                          onEdit: () {
-                            // TODO: buka halaman detail_produk_page
-                          },
-                        );
-                      }
-                      final ada = _tersedia[p.nama] ?? true;
-                      return ProdukCard.ketersediaan(
-                        nama: p.nama,
-                        gambar: p.gambar,
-                        tersedia: ada,
-                        onTersedia: () => setState(() => _tersedia[p.nama] = true),
-                        onTidak: () => setState(() => _tersedia[p.nama] = false),
-                      );
-                    },
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _form,
+        backgroundColor: BerandaStyle.rose,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text(
+          'Tambah',
+          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600),
+        ),
+      ),
+      body: LatarPink(
+        child: SafeArea(
+          child: p.loading && p.semua.isEmpty
+              ? const Center(
+                  child: CircularProgressIndicator(color: BerandaStyle.rose),
+                )
+              : RefreshIndicator(
+                  color: BerandaStyle.rose,
+                  onRefresh: () => p.muat(),
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+                    children: [
+                      Muncul(
+                        key: const ValueKey('header'),
+                        child: StokHeader(
+                          jumlahPeringatan: p.produkHabis.length,
+                          onKembali: () => Navigator.pushReplacementNamed(
+                            context,
+                            '/beranda',
+                          ),
+                          onNotif: () =>
+                              tampilkanPeringatanStok(context, p.produkHabis),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Muncul(
+                        key: const ValueKey('cari'),
+                        urutan: 1,
+                        child: StokSearchBar(
+                          onUbah: p.cari,
+                          onFilter: _filterStatus,
+                          filterAktif: p.filterAktif,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Muncul(
+                        key: const ValueKey('kategori'),
+                        urutan: 2,
+                        child: FilterKategori(
+                          kategori: p.kategori,
+                          kategoriTerpilih: p.kategoriTerpilih,
+                          subTerpilih: p.subTerpilih,
+                          onPilih: p.pilihKategori,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (daftar.isEmpty)
+                        const _Kosong()
+                      else
+                        for (final produk in daftar)
+                          Padding(
+                            key: ValueKey(produk.id),
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: ProdukCard(
+                              produk: produk,
+                              onKelola: () => _kelola(produk),
+                              onEdit: () => _form(produk),
+                              onHapus: () => _hapus(produk),
+                            ),
+                          ),
+                      if (p.error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            'Gagal memuat data: ${p.error}',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-          ),
-        ],
+                ),
+        ),
       ),
     );
   }
 }
 
-class _Produk {
-  const _Produk(this.nama, this.gambar, {this.stok});
-  final String nama;
-  final String gambar;
-  final int? stok; // null = mode Tersedia/Tidak
+class _Kosong extends StatelessWidget {
+  const _Kosong();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          Icon(
+            Icons.local_florist_outlined,
+            size: 48,
+            color: BerandaStyle.roseSoft,
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Belum ada produk',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 13,
+              color: BerandaStyle.teksRedup,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

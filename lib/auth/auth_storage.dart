@@ -1,5 +1,3 @@
-﻿// Menyimpan token/sesi login di HP
-
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,32 +8,32 @@ class AuthStorage {
   static const _kToken = 'auth_token';
   static const _kUser = 'auth_user';
 
-  Future<void> saveSession(String token, UserModel user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kToken, token);
-    await prefs.setString(_kUser, jsonEncode(user.toJson()));
+  Future<void> simpan(LoginResponseModel data) async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.setString(_kToken, data.token);
+    await sp.setString(_kUser, jsonEncode(data.user.toJson()));
   }
 
-  Future<String?> readToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_kToken);
-  }
-
-  Future<UserModel?> readUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_kUser);
-    if (raw == null) return null;
+  Future<LoginResponseModel?> baca() async {
+    final sp = await SharedPreferences.getInstance();
+    final token = sp.getString(_kToken);
+    final user = sp.getString(_kUser);
+    if (token == null || user == null) return null;
     try {
-      return UserModel.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      return LoginResponseModel(
+        token: token,
+        user: UserLogin.fromJson(
+          Map<String, dynamic>.from(jsonDecode(user) as Map),
+        ),
+      );
     } catch (_) {
       return null;
     }
   }
 
-  Future<void> clear() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_kToken);
-    await prefs.remove(_kUser);
+  Future<void> hapus() async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.remove(_kToken);
+    await sp.remove(_kUser);
   }
-}// Simpan dan baca token (flutter_secure_storage)
-
+}

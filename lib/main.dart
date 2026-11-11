@@ -1,69 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'app.dart';
 import 'auth/auth_provider.dart';
-import 'auth/login_page.dart';
-import 'core/shared/app_theme.dart';
-import 'pages/beranda/beranda_page.dart';
-import 'pages/stok/update_stok_page.dart';
+import 'core/api/api_client.dart';
+import 'providers/beranda_provider.dart';
+import 'providers/stok_provider.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final auth = AuthProvider();
+  await auth.muatSesi();
+
+  ApiClient.onUnauthorized = () {
+    auth.bersihkanSesi();
+    App.navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      '/login',
+      (_) => false,
+    );
+  };
+
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AuthProvider(),
-      child: const MyApp(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthProvider>.value(value: auth),
+        ChangeNotifierProvider(create: (_) => BerandaProvider()),
+        ChangeNotifierProvider(create: (_) => StokProvider()),
+      ],
+      child: App(initialRoute: auth.sudahLogin ? '/beranda' : '/login'),
     ),
   );
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Royal Florist',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      initialRoute: '/login',
-      routes: {
-        '/login': (_) => const LoginPage(),
-        '/beranda': (_) => const BerandaPage(),
-        '/update-stok': (_) => const UpdateStokPage(),
-        // Halaman di bawah belum dibuat; diganti halaman sementara
-        // supaya tombol navigasi bawah tidak membuat aplikasi error.
-        '/status-order': (_) => const _SegeraPage('Status Order'),
-        '/ringkasan': (_) => const _SegeraPage('Ringkasan'),
-        '/profil': (_) => const _SegeraPage('Profil'),
-      },
-    );
-  }
-}
-
-/// Halaman sementara untuk menu yang belum selesai dibuat.
-class _SegeraPage extends StatelessWidget {
-  const _SegeraPage(this.judul);
-
-  final String judul;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(judul)),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Halaman $judul belum dibuat'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () =>
-                  Navigator.of(context).pushReplacementNamed('/beranda'),
-              child: const Text('Kembali ke Beranda'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

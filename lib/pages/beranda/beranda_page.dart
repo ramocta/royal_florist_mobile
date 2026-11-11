@@ -1,236 +1,180 @@
-﻿// Figma: Beranda
 import 'package:flutter/material.dart';
-import '../../core/shared/app_colors.dart';
+import 'package:provider/provider.dart';
+
+import '../../auth/auth_provider.dart';
+import '../../models/beranda_model.dart';
+import '../../providers/beranda_provider.dart';
+import '../../widgets/beranda/beranda_header.dart';
+import '../../widgets/beranda/beranda_style.dart';
 import '../../widgets/beranda/grafik_penjualan.dart';
 import '../../widgets/beranda/info_hari_ini_card.dart';
-import '../../widgets/common/asset_icon.dart';
+import '../../widgets/beranda/menu_cepat.dart';
+import '../../widgets/beranda/muncul.dart';
+import '../../widgets/beranda/notifikasi_dialog.dart';
+import '../../widgets/beranda/pesanan_baru_card.dart';
+import '../../widgets/beranda/salam_card.dart';
 import '../../widgets/common/bottom_nav_bar.dart';
+import '../../widgets/common/latar_pink.dart';
 
-class BerandaPage extends StatelessWidget {
+class BerandaPage extends StatefulWidget {
   const BerandaPage({super.key});
 
-  // TODO: ganti dengan data dari ringkasan_provider / pesanan_provider
-  static const _jumlahPesananBaru = 2;
-  static const _totalPesanan = '2';
-  static const _totalPendapatan = 'Rp 200.000';
+  @override
+  State<BerandaPage> createState() => _BerandaPageState();
+}
+
+class _BerandaPageState extends State<BerandaPage> {
+  late final BerandaProvider _p;
+
+  @override
+  void initState() {
+    super.initState();
+    _p = context.read<BerandaProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _p.mulai());
+  }
+
+  @override
+  void dispose() {
+    _p.berhenti();
+    super.dispose();
+  }
+
+  void _ke(String route) => Navigator.pushReplacementNamed(context, route);
 
   @override
   Widget build(BuildContext context) {
+    final p = context.watch<BerandaProvider>();
+    final d = p.data;
+
+    final namaLogin = context.watch<AuthProvider>().user?.nama;
+    final nama = d.namaUser.isNotEmpty ? d.namaUser : (namaLogin ?? 'Karyawan');
+
+    void bukaNotif() => tampilkanNotifikasiDialog(
+      context,
+      pesanan: d.pesananBaru,
+      onLihatSemua: () => _ke('/status-order'),
+    );
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: BerandaStyle.latarBawah,
       bottomNavigationBar: const BottomNavBar(currentIndex: 0),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(15, 12, 15, 24),
-          children: [
-            _HeaderCard(onBellTap: () {
-              // TODO: showDialog(context: context, builder: (_) => const NotifikasiDialog());
-            }),
-            const SizedBox(height: 16),
-            _PesananBaruCard(
-              jumlah: _jumlahPesananBaru,
-              onTap: () => Navigator.of(context).pushNamed('/status-order'),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _MenuTile(
-                    label: 'Update Stok',
-                    asset: 'assets/icons/stok-icon.png',
-                    fallback: Icons.inventory_2_outlined,
-                    onTap: () => Navigator.of(context).pushNamed('/update-stok'),
+      body: LatarPink(
+        child: SafeArea(
+          child: p.loading && d.grafik.isEmpty
+              ? const Center(
+                  child: CircularProgressIndicator(color: BerandaStyle.rose),
+                )
+              : RefreshIndicator(
+                  color: BerandaStyle.rose,
+                  onRefresh: () => p.muat(),
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                    children: [
+                      Muncul(
+                        key: const ValueKey('header'),
+                        child: BerandaHeader(
+                          jumlahNotif: d.pesananBaru.length,
+                          onNotif: bukaNotif,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Muncul(
+                        key: const ValueKey('salam'),
+                        urutan: 1,
+                        child: SalamCard(nama: nama),
+                      ),
+                      if (d.pesananBaru.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        Muncul(
+                          key: const ValueKey('baru'),
+                          urutan: 1,
+                          child: PesananBaruCard(
+                            jumlah: d.pesananBaru.length,
+                            onTap: bukaNotif,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 14),
+                      Muncul(
+                        key: const ValueKey('menu'),
+                        urutan: 2,
+                        child: MenuCepat(
+                          onUpdateStok: () => _ke('/update-stok'),
+                          onStatusOrder: () => _ke('/status-order'),
+                          onProfil: () => _ke('/profil'),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      Muncul(
+                        key: const ValueKey('info'),
+                        urutan: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Info Hari Ini',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: BerandaStyle.teksGelap,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: InfoHariIniCard(
+                                    judul: 'Total Pesanan',
+                                    nilai: d.totalPesananHariIni.toDouble(),
+                                    format: (v) => v.round().toString(),
+                                    ikon: Icons.show_chart_rounded,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: InfoHariIniCard(
+                                    judul: 'Total Pendapatan',
+                                    nilai: d.pendapatanHariIni.toDouble(),
+                                    format: (v) =>
+                                        BerandaModel.rupiah(v.round()),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Muncul(
+                        key: const ValueKey('grafik'),
+                        urutan: 4,
+                        child: GrafikPenjualan(
+                          data: d.grafik,
+                          tanggal: d.tanggal ?? DateTime.now(),
+                          onPilihTanggal: p.ubahTanggal,
+                          onHariIni: p.tanggalDipilih == null
+                              ? null
+                              : p.kembaliKeHariIni,
+                        ),
+                      ),
+                      if (p.error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(
+                            'Gagal memuat data: ${p.error}',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _MenuTile(
-                    label: 'Status Order',
-                    asset: 'assets/icons/order-icon.png',
-                    fallback: Icons.receipt_long_outlined,
-                    onTap: () => Navigator.of(context).pushNamed('/status-order'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _MenuTile(
-                    label: 'Profil',
-                    asset: 'assets/icons/profiil-icon.png',
-                    fallback: Icons.person_outline,
-                    onTap: () => Navigator.of(context).pushNamed('/profil'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const InfoHariIniCard(
-              totalPesanan: _totalPesanan,
-              totalPendapatan: _totalPendapatan,
-            ),
-            const SizedBox(height: 16),
-            const GrafikPenjualan(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HeaderCard extends StatelessWidget {
-  const _HeaderCard({this.onBellTap});
-  final VoidCallback? onBellTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: AppColors.maroon,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Container(
-        height: 165,
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-        decoration: BoxDecoration(
-          color: AppColors.pinkCard,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Halo, Karyawan',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-                  SizedBox(height: 2),
-                  Padding(
-                    padding: EdgeInsets.only(left: 4),
-                    child: Text('Selamat bekerja!',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400)),
-                  ),
-                ],
-              ),
-            ),
-            InkWell(
-              onTap: onBellTap,
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: AssetIcon('assets/icons/lonceng1.png',
-                      size: 22, fallback: Icons.notifications),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PesananBaruCard extends StatelessWidget {
-  const _PesananBaruCard({required this.jumlah, this.onTap});
-  final int jumlah;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.divider),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.pinkSoft,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: AssetIcon('assets/icons/lonceng.png',
-                      size: 24, fallback: Icons.notifications),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Pesanan Baru ($jumlah)',
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
-                    Text('Ada $jumlah pesanan yang perlu dikonfirmasi',
-                        style: const TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.muted)),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right, color: AppColors.muted),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MenuTile extends StatelessWidget {
-  const _MenuTile({
-    required this.label,
-    required this.asset,
-    required this.fallback,
-    this.onTap,
-  });
-
-  final String label;
-  final String asset;
-  final IconData fallback;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          height: 100,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.divider),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AssetIcon(asset, size: 32, fallback: fallback),
-              const SizedBox(height: 8),
-              Text(label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.ink)),
-            ],
-          ),
         ),
       ),
     );

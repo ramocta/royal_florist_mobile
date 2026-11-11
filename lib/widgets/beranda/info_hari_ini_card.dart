@@ -1,69 +1,71 @@
-﻿// Kartu total pesanan + pendapatan hari ini
-
 import 'package:flutter/material.dart';
-import '../../core/shared/app_colors.dart';
+
+import 'beranda_style.dart';
 
 class InfoHariIniCard extends StatelessWidget {
   const InfoHariIniCard({
     super.key,
-    required this.totalPesanan,
-    required this.totalPendapatan,
+    required this.judul,
+    required this.nilai,
+    required this.format,
+    this.ikon,
   });
 
-  final String totalPesanan;
-  final String totalPendapatan;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Info Hari Ini',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _InfoTile(label: 'Total Pesanan', value: totalPesanan, valueSize: 28)),
-            const SizedBox(width: 12),
-            Expanded(child: _InfoTile(label: 'Total Pendapatan', value: totalPendapatan, valueSize: 17)),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _InfoTile extends StatelessWidget {
-  const _InfoTile({required this.label, required this.value, required this.valueSize});
-
-  final String label;
-  final String value;
-  final double valueSize;
+  final String judul;
+  final double nilai;
+  final String Function(double) format;
+  final IconData? ikon;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 96,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
-      ),
+      padding: const EdgeInsets.all(16),
+      decoration: BerandaStyle.kartu(radius: 22),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.muted)),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(value,
-                style: TextStyle(
-                    fontSize: valueSize, fontWeight: FontWeight.w700, color: AppColors.ink)),
+          Text(
+            judul,
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 12,
+              color: BerandaStyle.rose,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0, end: nilai),
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, v, _) => FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      format(v),
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: BerandaStyle.teksGelap,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              if (ikon != null)
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: BerandaStyle.rose.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(ikon, color: BerandaStyle.rose, size: 20),
+                ),
+            ],
           ),
         ],
       ),

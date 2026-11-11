@@ -1,137 +1,255 @@
-﻿// Kartu satu produk + tombol Tersedia/Tidak
-
 import 'package:flutter/material.dart';
+
 import '../../core/shared/app_colors.dart';
-import '../common/asset_icon.dart';
+import '../../models/produk_model.dart';
+import '../beranda/beranda_style.dart';
+import 'produk_foto.dart';
 
-/// Kartu produk. Dua mode:
-/// - [ProdukCard.stok]         : nama + "Stok Tangkai = N" + tombol edit
-/// - [ProdukCard.ketersediaan] : nama + tombol Tersedia / Tidak
 class ProdukCard extends StatelessWidget {
-  const ProdukCard.stok({
+  const ProdukCard({
     super.key,
-    required this.nama,
-    required this.gambar,
-    required int this.stok,
-    this.onEdit,
-  })  : tersedia = null,
-        onTersedia = null,
-        onTidak = null;
+    required this.produk,
+    required this.onKelola,
+    required this.onEdit,
+    required this.onHapus,
+  });
 
-  const ProdukCard.ketersediaan({
-    super.key,
-    required this.nama,
-    required this.gambar,
-    required bool this.tersedia,
-    this.onTersedia,
-    this.onTidak,
-  })  : stok = null,
-        onEdit = null;
-
-  final String nama;
-  final String gambar;
-  final int? stok;
-  final bool? tersedia;
-  final VoidCallback? onEdit;
-  final VoidCallback? onTersedia;
-  final VoidCallback? onTidak;
-
-  bool get _modeStok => stok != null;
+  final Produk produk;
+  final VoidCallback onKelola;
+  final VoidCallback onEdit;
+  final VoidCallback onHapus;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.lightGrey),
-      ),
+      padding: const EdgeInsets.all(12),
+      decoration: BerandaStyle.kartu(radius: 22),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              width: 64,
-              height: 64,
-              color: _modeStok ? AppColors.maroon : AppColors.pinkSoft,
-              child: Image.asset(
-                gambar,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.local_florist, color: AppColors.white),
-              ),
-            ),
+          Stack(
+            children: [
+              ProdukFoto(url: produk.fotoUrl, lebar: 92),
+              const Positioned(top: 6, left: 6, child: _Lencana()),
+            ],
           ),
           const SizedBox(width: 12),
-          Expanded(child: _modeStok ? _infoStok() : _infoKetersediaan()),
-          if (_modeStok)
-            InkWell(
-              onTap: onEdit,
-              borderRadius: BorderRadius.circular(8),
-              child: const Padding(
-                padding: EdgeInsets.all(6),
-                child: AssetIcon('assets/icons/pencil.png', size: 22, fallback: Icons.edit_outlined),
-              ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  produk.nama,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.maroon,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: [
+                    _Pil(produk.kategori),
+                    if (!produk.aktif) const _Pil('Nonaktif', abu: true),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                produk.pakaiStok
+                    ? _Stok(produk.stok)
+                    : _Ketersediaan(produk.tersedia),
+              ],
             ),
+          ),
+          Column(
+            children: [
+              Material(
+                color: BerandaStyle.rose.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: onKelola,
+                  child: const SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Icon(Icons.edit_outlined, color: BerandaStyle.rose),
+                  ),
+                ),
+              ),
+              PopupMenuButton<String>(
+                padding: EdgeInsets.zero,
+                icon: const Icon(
+                  Icons.more_horiz_rounded,
+                  color: BerandaStyle.teksRedup,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                onSelected: (v) => v == 'edit' ? onEdit() : onHapus(),
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'edit', child: Text('Edit produk')),
+                  PopupMenuItem(value: 'hapus', child: Text('Hapus')),
+                ],
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _infoStok() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(nama, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 2),
-        Text('Stok Tangkai = $stok',
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.red)),
-      ],
+class _Lencana extends StatelessWidget {
+  const _Lencana();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: BerandaStyle.rose,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Icon(
+        Icons.local_florist_rounded,
+        size: 14,
+        color: Colors.white,
+      ),
     );
   }
+}
 
-  Widget _infoKetersediaan() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(nama, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-        const Text('Apakah barang ini tersedia?',
-            style: TextStyle(fontSize: 10, color: AppColors.muted)),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(child: _pill('Tersedia', tersedia == true, onTersedia)),
-            const SizedBox(width: 8),
-            Expanded(child: _pill('Tidak', tersedia == false, onTidak)),
-          ],
-        ),
-      ],
-    );
-  }
+class _Pil extends StatelessWidget {
+  const _Pil(this.teks, {this.abu = false});
 
-  Widget _pill(String label, bool active, VoidCallback? onTap) {
-    return SizedBox(
-      height: 30,
-      child: Material(
-        color: active ? AppColors.maroon : AppColors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
-          side: const BorderSide(color: AppColors.maroon),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(6),
-          child: Center(
-            child: Text(label,
-                style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: active ? AppColors.white : AppColors.maroon)),
-          ),
+  final String teks;
+  final bool abu;
+
+  @override
+  Widget build(BuildContext context) {
+    final warna = abu ? Colors.grey.shade600 : BerandaStyle.rose;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: warna.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        teks,
+        style: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: warna,
         ),
       ),
+    );
+  }
+}
+
+class _Stok extends StatelessWidget {
+  const _Stok(this.stok);
+
+  final int stok;
+
+  @override
+  Widget build(BuildContext context) {
+    final warna = stok > 0 ? BerandaStyle.rose : const Color(0xFFB3261E);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 13,
+              color: BerandaStyle.teksRedup,
+            ),
+            SizedBox(width: 4),
+            Text(
+              'Stok Tersedia',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 11,
+                color: BerandaStyle.teksRedup,
+              ),
+            ),
+          ],
+        ),
+        Text.rich(
+          TextSpan(
+            text: '$stok',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: warna,
+            ),
+            children: const [
+              TextSpan(
+                text: ' Tangkai',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Ketersediaan extends StatelessWidget {
+  const _Ketersediaan(this.tersedia);
+
+  final bool tersedia;
+
+  @override
+  Widget build(BuildContext context) {
+    final warna = tersedia ? const Color(0xFF1E7A34) : const Color(0xFFB3261E);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Ketersediaan',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 11,
+            color: BerandaStyle.teksRedup,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          decoration: BoxDecoration(
+            color: warna.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                tersedia ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                size: 16,
+                color: warna,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                tersedia ? 'Tersedia' : 'Tidak tersedia',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: warna,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

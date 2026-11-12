@@ -2,6 +2,7 @@
 
 import '../../services/pesanan_service.dart';
 import '../../widgets/common/bottom_nav_bar.dart';
+import 'detail_pesanan_page.dart';
 
 class StatusOrderPage extends StatefulWidget {
   const StatusOrderPage({super.key});
@@ -174,11 +175,12 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
     }).toList();
   }
 
-  void _bukaDetail(Map<String, dynamic> order) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Menunggu halaman Detail Pesanan.')),
-    );
-  }
+   void _bukaDetail(Map<String, dynamic> order) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => DetailPesananPage(order: order)),
+  );
+}
 
   void _kembali() {
     Navigator.pushReplacementNamed(context, '/beranda');

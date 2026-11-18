@@ -1,7 +1,14 @@
 ﻿import 'package:flutter/material.dart';
 
+import '../../core/shared/app_colors.dart';
 import '../../services/pesanan_service.dart';
+import '../../widgets/beranda/beranda_style.dart';
 import '../../widgets/common/bottom_nav_bar.dart';
+<<<<<<< Updated upstream
+=======
+import '../../widgets/common/latar_pink.dart';
+import 'detail_pesanan_page.dart';
+>>>>>>> Stashed changes
 
 class StatusOrderPage extends StatefulWidget {
   const StatusOrderPage({super.key});
@@ -11,7 +18,7 @@ class StatusOrderPage extends StatefulWidget {
 }
 
 class _StatusOrderPageState extends State<StatusOrderPage> {
-  static const Color _maroon = Color(0xFF800020);
+  static const Color _maroon = AppColors.maroon;
 
   final PesananService _service = PesananService();
   final TextEditingController _searchController = TextEditingController();
@@ -23,11 +30,8 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
 
   final List<String> _filters = [
     'Semua',
-    'Menunggu Pembayaran',
-    'Menunggu Konfirmasi',
     'Dikonfirmasi',
     'Diproses',
-    'Dalam Pengiriman',
     'Siap Diambil',
     'Selesai',
     'Dibatalkan',
@@ -140,7 +144,6 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
   }
 
   String _rupiah(dynamic value) {
-    // num.tryParse supaya "250000.00" tidak menjadi 0
     final number = (num.tryParse(value?.toString() ?? '') ?? 0).toInt();
     final formatted = number.toString().replaceAllMapped(
       RegExp(r'\B(?=(\d{3})+(?!\d))'),
@@ -175,8 +178,14 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
   }
 
   void _bukaDetail(Map<String, dynamic> order) {
+<<<<<<< Updated upstream
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Menunggu halaman Detail Pesanan.')),
+=======
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => DetailPesananPage(order: order)),
+>>>>>>> Stashed changes
     );
   }
 
@@ -192,103 +201,185 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
         if (!didPop) _kembali();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFFFF5F7),
+        backgroundColor: BerandaStyle.latarBawah,
         bottomNavigationBar: const BottomNavBar(currentIndex: 2),
-        appBar: AppBar(
-          backgroundColor: _maroon,
-          foregroundColor: Colors.white,
-          iconTheme: const IconThemeData(color: Colors.white),
-          actionsIconTheme: const IconThemeData(color: Colors.white),
-          titleTextStyle: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: _kembali,
-          ),
-          title: const Text('Status Order'),
-          actions: [
-            IconButton(
-              onPressed: _loadPesanan,
-              icon: const Icon(Icons.refresh),
+        body: LatarPink(
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                _header(),
+                _searchBar(),
+                _filterChips(),
+                const SizedBox(height: 8),
+                Expanded(child: _buildContent()),
+              ],
             ),
-          ],
+          ),
         ),
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(
-                  hintText: 'Cari invoice atau nama pelanggan',
-                  prefixIcon: const Icon(Icons.search, color: _maroon),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
+      ),
+    );
+  }
+
+  Widget _header() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: _kembali,
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+              color: _maroon,
+            ),
+          ),
+          const Expanded(
+            child: Text(
+              'Status Order',
+              style: TextStyle(
+                fontFamily: 'CormorantGaramond',
+                fontWeight: FontWeight.w700,
+                fontSize: 26,
+                color: _maroon,
+              ),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BerandaStyle.kartu(radius: 14),
+            child: IconButton(
+              onPressed: _loadPesanan,
+              icon: const Icon(Icons.refresh_rounded, color: BerandaStyle.rose),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _searchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: Container(
+        decoration: BerandaStyle.kartu(radius: 16),
+        child: TextField(
+          controller: _searchController,
+          onChanged: (_) => setState(() {}),
+          style: const TextStyle(color: BerandaStyle.teksGelap),
+          decoration: const InputDecoration(
+            hintText: 'Cari invoice atau nama pelanggan',
+            hintStyle: TextStyle(color: BerandaStyle.teksRedup, fontSize: 14),
+            prefixIcon: Icon(Icons.search_rounded, color: BerandaStyle.rose),
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            contentPadding: EdgeInsets.symmetric(vertical: 14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _filterChips() {
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        itemCount: _filters.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final item = _filters[index];
+          final aktif = _filter == item;
+
+          return GestureDetector(
+            onTap: () => setState(() => _filter = item),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                gradient: aktif
+                    ? const LinearGradient(
+                        colors: [AppColors.crimson, BerandaStyle.rose],
+                      )
+                    : null,
+                color: aktif ? null : Colors.white.withValues(alpha: 0.94),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: aktif
+                      ? Colors.transparent
+                      : BerandaStyle.rose.withValues(alpha: 0.15),
+                ),
+                boxShadow: aktif
+                    ? [
+                        BoxShadow(
+                          color: BerandaStyle.rose.withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Text(
+                item,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: aktif ? FontWeight.w600 : FontWeight.w500,
+                  color: aktif ? Colors.white : BerandaStyle.teksGelap,
                 ),
               ),
             ),
-            SizedBox(
-              height: 45,
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                scrollDirection: Axis.horizontal,
-                itemCount: _filters.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final item = _filters[index];
-
-                  return ChoiceChip(
-                    label: Text(item),
-                    selected: _filter == item,
-                    selectedColor: _maroon,
-                    backgroundColor: Colors.white,
-                    checkmarkColor: Colors.white,
-                    labelStyle: TextStyle(
-                      color: _filter == item ? Colors.white : Colors.black87,
-                    ),
-                    onSelected: (_) => setState(() => _filter = item),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(child: _buildContent()),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildContent() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: _maroon));
+      return const Center(
+        child: CircularProgressIndicator(color: BerandaStyle.rose),
+      );
     }
 
     if (_error != null) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 50, color: Colors.red),
-            const SizedBox(height: 12),
-            const Text('Gagal memuat pesanan'),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(_error!, textAlign: TextAlign.center),
-            ),
-            ElevatedButton(
-              onPressed: _loadPesanan,
-              child: const Text('Coba Lagi'),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 50, color: AppColors.red),
+              const SizedBox(height: 12),
+              const Text(
+                'Gagal memuat pesanan',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: BerandaStyle.teksGelap,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: BerandaStyle.teksRedup),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: BerandaStyle.rose,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: _loadPesanan,
+                child: const Text('Coba Lagi'),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -297,33 +388,46 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
 
     if (orders.isEmpty) {
       return RefreshIndicator(
-        color: _maroon,
+        color: BerandaStyle.rose,
         onRefresh: _loadPesanan,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: const [
             SizedBox(height: 100),
-            Icon(Icons.receipt_long_outlined, size: 70, color: Colors.grey),
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 70,
+              color: BerandaStyle.roseSoft,
+            ),
             SizedBox(height: 15),
             Center(
               child: Text(
                 'Belum ada pesanan',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 17,
+                  color: BerandaStyle.teksGelap,
+                ),
               ),
             ),
             SizedBox(height: 5),
-            Center(child: Text('Pesanan pelanggan akan muncul di sini.')),
+            Center(
+              child: Text(
+                'Pesanan pelanggan akan muncul di sini.',
+                style: TextStyle(color: BerandaStyle.teksRedup),
+              ),
+            ),
           ],
         ),
       );
     }
 
     return RefreshIndicator(
-      color: _maroon,
+      color: BerandaStyle.rose,
       onRefresh: _loadPesanan,
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
         itemCount: orders.length,
         itemBuilder: (context, index) => _orderCard(orders[index]),
       ),
@@ -338,94 +442,124 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
     final total = _rupiah(_ambilTotal(order));
     final warna = _statusColor(status);
 
-    return Card(
-      color: Colors.white,
-      elevation: 2,
+    return Container(
       margin: const EdgeInsets.only(bottom: 14),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => _bukaDetail(order),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.receipt_long, color: _maroon),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      invoice.toString(),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: warna.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      status,
-                      style: TextStyle(
-                        color: warna,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+      decoration: BerandaStyle.kartu(),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => _bukaDetail(order),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: BerandaStyle.rose.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.receipt_long,
+                        size: 18,
+                        color: BerandaStyle.rose,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const Divider(height: 24),
-              Row(
-                children: [
-                  const Icon(Icons.person_outline, color: Colors.grey),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(nama.toString())),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.calendar_today_outlined,
-                    size: 17,
-                    color: Colors.grey,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(tanggal),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  total,
-                  style: const TextStyle(
-                    color: _maroon,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        invoice.toString(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: BerandaStyle.teksGelap,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: warna.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          color: warna,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Divider(
+                  height: 24,
+                  color: BerandaStyle.rose.withValues(alpha: 0.12),
+                ),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.person_outline,
+                      size: 20,
+                      color: BerandaStyle.teksRedup,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        nama.toString(),
+                        style: const TextStyle(color: BerandaStyle.teksGelap),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      size: 17,
+                      color: BerandaStyle.teksRedup,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      tanggal,
+                      style: const TextStyle(color: BerandaStyle.teksRedup),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    total,
+                    style: const TextStyle(
+                      color: _maroon,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  'Lihat detail pesanan →',
-                  style: TextStyle(
-                    color: _maroon,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
+                const SizedBox(height: 6),
+                const Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    'Lihat detail pesanan →',
+                    style: TextStyle(
+                      color: BerandaStyle.rose,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -4,11 +4,8 @@ import '../../core/shared/app_colors.dart';
 import '../../services/pesanan_service.dart';
 import '../../widgets/beranda/beranda_style.dart';
 import '../../widgets/common/bottom_nav_bar.dart';
-<<<<<<< Updated upstream
-=======
 import '../../widgets/common/latar_pink.dart';
 import 'detail_pesanan_page.dart';
->>>>>>> Stashed changes
 
 class StatusOrderPage extends StatefulWidget {
   const StatusOrderPage({super.key});
@@ -178,14 +175,9 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
   }
 
   void _bukaDetail(Map<String, dynamic> order) {
-<<<<<<< Updated upstream
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Menunggu halaman Detail Pesanan.')),
-=======
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => DetailPesananPage(order: order)),
->>>>>>> Stashed changes
     );
   }
 

@@ -69,35 +69,6 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
     }
   }
 
-  /// Membuka halaman konfirmasi, lalu memuat ulang detail setelah kembali
-  /// supaya status terbaru (mis. sudah dikonfirmasi) langsung terlihat.
-  Future<void> _bukaKonfirmasi() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => KonfirmasiPesananPage(
-          invoice: _teks(['no_invoice', 'invoice']),
-          nama: _teks(['nama_pelanggan', 'nama']),
-          tanggal: _tanggal().isEmpty ? '-' : _tanggal(),
-          total: _totalTeks(),
-        ),
-      ),
-    );
-    if (!mounted) return;
-    await _muatDetail();
-  }
-
-  /// Total dalam format "Rp449.000" (sama dengan kartu total di halaman ini).
-  String _totalTeks() {
-    final total = _angkaOrNull(_data, ['total_harga', 'total']) ??
-        _daftarProduk().fold<int>(0, (sum, e) => sum + e.subtotal);
-    final s = total.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+$)'),
-          (m) => '${m[1]}.',
-        );
-    return 'Rp$s';
-  }
-
   // ---------- Pembaca field yang toleran terhadap beda nama kolom ----------
   String _teks(List<String> kunci, {String bawaan = '-'}) {
     for (final k in kunci) {
@@ -191,13 +162,15 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
     return '${dua(l.day)} ${bulan[l.month - 1]} ${l.year} • ${dua(l.hour)}:${dua(l.minute)}';
   }
 
-  void _bukaKonfirmasi() {
+  /// Membuka halaman konfirmasi, lalu memuat ulang detail setelah kembali
+  /// supaya status terbaru (mis. sudah dikonfirmasi) langsung terlihat.
+  Future<void> _bukaKonfirmasi() async {
     final produk = _daftarProduk();
     final total = _angkaOrNull(_data, ['total_harga', 'total']) ??
         produk.fold<int>(0, (s, e) => s + e.subtotal);
     final statusRaw = _teks(['status_pesanan', 'status'], bawaan: '');
 
-    Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => KonfirmasiPesananPage(
@@ -210,6 +183,8 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
         ),
       ),
     );
+    if (!mounted) return;
+    await _muatDetail();
   }
 
   @override

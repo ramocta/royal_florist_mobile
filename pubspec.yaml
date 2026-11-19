@@ -43,6 +43,10 @@ dependencies:
   cached_network_image: ^3.4.1
   flutter_dotenv: ^6.0.1
   provider: ^6.1.2
+  google_fonts: ^8.2.1
+  pdf: ^3.12.0
+  printing: ^5.14.3
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:
@@ -54,6 +58,13 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+
+# Workaround bug image 4.11.0 (declares archive ^4.0.9 tetapi butuh archive
+# >= 4.4.0), sedangkan package pdf membatasi archive < 4.1.0.
+# Lihat: https://github.com/brendan-duncan/image/issues/820
+# Hapus override ini kalau image sudah >= 4.11.1 bisa terpilih secara normal.
+dependency_overrides:
+  image: 4.10.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

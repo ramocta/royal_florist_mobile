@@ -1,8 +1,11 @@
 ﻿import 'package:flutter/material.dart';
 import '../../core/shared/app_colors.dart';
+import '../../services/pesanan_service.dart';
 import 'pesanan_berhasil_page.dart';
 
 class KonfirmasiPesananPage extends StatefulWidget {
+  final dynamic idOrder;
+  final String statusSaatIni; // label, mis. 'Menunggu Konfirmasi'
   final String invoice;
   final String nama;
   final String tanggal;
@@ -10,10 +13,12 @@ class KonfirmasiPesananPage extends StatefulWidget {
 
   const KonfirmasiPesananPage({
     super.key,
-    this.invoice = 'INV-20261004-001',
-    this.nama = 'Siti Maisyaroh',
-    this.tanggal = '04 Okt 2026 • 14:32',
-    this.total = 'Rp75.000',
+    required this.idOrder,
+    this.statusSaatIni = '',
+    this.invoice = '-',
+    this.nama = '-',
+    this.tanggal = '',
+    this.total = 'Rp0',
   });
 
   @override
@@ -29,8 +34,27 @@ class _KonfirmasiPesananPageState extends State<KonfirmasiPesananPage> {
     'Dibatalkan',
   ];
 
-  String _selected = 'Dikonfirmasi';
+  // label di layar -> nilai yang dikirim ke backend
+  static const _nilaiApi = {
+    'Dikonfirmasi': 'dikonfirmasi',
+    'Diproses': 'diproses',
+    'Siap Diambil': 'siap_diambil',
+    'Selesai': 'selesai',
+    'Dibatalkan': 'dibatalkan',
+  };
+
+  final _service = PesananService();
   final _catatanCtrl = TextEditingController();
+  late String _selected;
+  bool _menyimpan = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = _statusList.contains(widget.statusSaatIni)
+        ? widget.statusSaatIni
+        : 'Dikonfirmasi';
+  }
 
   @override
   void dispose() {
@@ -38,19 +62,35 @@ class _KonfirmasiPesananPageState extends State<KonfirmasiPesananPage> {
     super.dispose();
   }
 
-  void _simpan() {
-    // TODO: kirim _selected dan _catatanCtrl.text lewat PesananService
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PesananBerhasilPage(
-          invoice: widget.invoice,
-          nama: widget.nama,
-          total: widget.total,
-          status: _selected,
+  Future<void> _simpan() async {
+    if (_menyimpan) return;
+    setState(() => _menyimpan = true);
+
+    try {
+      await _service.updateStatus(
+        id: widget.idOrder,
+        status: _nilaiApi[_selected]!,
+        catatan: _catatanCtrl.text,
+      );
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PesananBerhasilPage(
+            invoice: widget.invoice,
+            nama: widget.nama,
+            total: widget.total,
+            status: _selected,
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _menyimpan = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menyimpan: $e')),
+      );
+    }
   }
 
   @override
@@ -236,7 +276,7 @@ class _KonfirmasiPesananPageState extends State<KonfirmasiPesananPage> {
       width: double.infinity,
       height: 60,
       child: ElevatedButton(
-        onPressed: _simpan,
+        onPressed: _menyimpan ? null : _simpan,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.maroon,
           foregroundColor: AppColors.white,
@@ -245,10 +285,17 @@ class _KonfirmasiPesananPageState extends State<KonfirmasiPesananPage> {
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-        child: const Text(
-          'Simpan',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
+        child: _menyimpan
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2.5, color: Colors.white),
+              )
+            : const Text(
+                'Simpan',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
       ),
     );
   }

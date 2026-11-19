@@ -5,7 +5,6 @@ import '../../core/api/api_client.dart';
 import '../../core/shared/app_colors.dart';
 import '../../widgets/beranda/beranda_style.dart';
 import '../../widgets/common/latar_pink.dart';
-import 'konfirmasi_pesanan_page.dart';
 
 // =====================================================================
 // Model satu baris produk
@@ -46,13 +45,11 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
     _muatDetail();
   }
 
-  dynamic get _idOrder =>
-      _data['id_order'] ?? _data['id'] ?? _data['id_pesanan'] ?? _data['order_id'];
-
   /// Mencoba GET /orders/{id}. Kalau gagal / endpoint belum ada,
   /// halaman tetap memakai data dari daftar.
   Future<void> _muatDetail() async {
-    final id = _idOrder;
+    final id =
+        _data['id_order'] ?? _data['id'] ?? _data['id_pesanan'] ?? _data['order_id'];
     if (id == null) return;
 
     setState(() => _memuat = true);
@@ -140,49 +137,6 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
     }).toList();
   }
 
-  // ---------- Untuk halaman Konfirmasi ----------
-  String _rp(int v) {
-    final s = v.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+$)'),
-          (m) => '${m[1]}.',
-        );
-    return 'Rp$s';
-  }
-
-  String _tanggalJam() {
-    final raw = _teks(['dibuat_pada', 'tanggal'], bawaan: '');
-    final d = DateTime.tryParse(raw);
-    if (d == null) return raw;
-    final l = d.toLocal();
-    const bulan = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
-    ];
-    String dua(int n) => n.toString().padLeft(2, '0');
-    return '${dua(l.day)} ${bulan[l.month - 1]} ${l.year} • ${dua(l.hour)}:${dua(l.minute)}';
-  }
-
-  void _bukaKonfirmasi() {
-    final produk = _daftarProduk();
-    final total = _angkaOrNull(_data, ['total_harga', 'total']) ??
-        produk.fold<int>(0, (s, e) => s + e.subtotal);
-    final statusRaw = _teks(['status_pesanan', 'status'], bawaan: '');
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => KonfirmasiPesananPage(
-          idOrder: _idOrder,
-          statusSaatIni: statusRaw.isEmpty ? '' : _label(statusRaw),
-          invoice: _teks(['no_invoice', 'invoice']),
-          nama: _teks(['nama_pelanggan', 'nama']),
-          tanggal: _tanggalJam(),
-          total: _rp(total),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final statusRaw = _teks(['status_pesanan', 'status'], bawaan: '');
@@ -198,7 +152,6 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
       produk: _daftarProduk(),
       totalServer: _angkaOrNull(_data, ['total_harga', 'total']),
       memuat: _memuat,
-      onKonfirmasi: _bukaKonfirmasi,
     );
   }
 }
@@ -626,7 +579,13 @@ class DetailPesananView extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(18),
-            onTap: onKonfirmasi,
+            onTap: onKonfirmasi ??
+                () {
+                  // TODO: panggil API konfirmasi pesanan
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Konfirmasi pesanan')),
+                  );
+                },
             child: Center(
               child: Text('Konfirmasi Pesanan',
                   style: _t(15.5, FontWeight.w600, Colors.white)),

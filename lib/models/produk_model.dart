@@ -29,18 +29,24 @@ class Kategori {
     required this.id,
     required this.nama,
     required this.subLabel,
+    required this.pakaiStok,
+    required this.bawaan,
     required this.subs,
   });
 
   final int id;
   final String nama;
   final String subLabel;
+  final bool pakaiStok;
+  final bool bawaan;
   final List<SubKategori> subs;
 
   factory Kategori.fromJson(Map<String, dynamic> j) => Kategori(
     id: (j['id'] as num).toInt(),
     nama: j['nama']?.toString() ?? '',
     subLabel: j['sub_label']?.toString() ?? 'Jenis',
+    pakaiStok: j['pakai_stok'] == true,
+    bawaan: j['bawaan'] == true,
     subs: ((j['subs'] as List?) ?? [])
         .map((e) => SubKategori.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList(),
@@ -69,6 +75,7 @@ class Produk {
     required this.tersedia,
     required this.aktif,
     required this.foto,
+    required this.satuan,
   });
 
   final int id;
@@ -85,12 +92,16 @@ class Produk {
   final bool tersedia;
   final bool aktif;
   final String? foto;
+  final String satuan;
 
   bool get ada => pakaiStok ? stok > 0 : tersedia;
 
   String get status => !aktif ? 'Nonaktif' : (ada ? 'Tersedia' : 'Habis');
 
   String? get fotoUrl => ApiConfig.fotoUrl(id, foto);
+
+  String get satuanTampil =>
+      satuan.isEmpty ? '' : satuan[0].toUpperCase() + satuan.substring(1);
 
   factory Produk.fromJson(Map<String, dynamic> j) => Produk(
     id: (j['id'] as num).toInt(),
@@ -107,6 +118,7 @@ class Produk {
     tersedia: j['tersedia'] == true,
     aktif: j['is_active'] == true,
     foto: j['foto']?.toString(),
+    satuan: j['satuan']?.toString() ?? 'pcs',
   );
 
   Produk copyWith({int? stok, bool? tersedia}) => Produk(
@@ -124,6 +136,7 @@ class Produk {
     tersedia: tersedia ?? this.tersedia,
     aktif: aktif,
     foto: foto,
+    satuan: satuan,
   );
 }
 

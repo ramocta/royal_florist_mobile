@@ -78,10 +78,13 @@ class _KelolaStokDialogState extends State<KelolaStokDialog> {
               fontWeight: FontWeight.w700,
               color: BerandaStyle.rose,
             ),
-            children: const [
+            children: [
               TextSpan(
-                text: ' Tangkai',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                text: ' ${widget.produk.satuanTampil}',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),

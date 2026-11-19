@@ -119,6 +119,9 @@ class StokProvider extends ChangeNotifier {
 
   Future<String?> hapus(Produk p) => _jalankan(() => _service.hapus(p.id));
 
+  Future<String?> tambahKategori(String nama, bool pakaiStok) =>
+      _jalankan(() => _service.tambahKategori(nama, pakaiStok));
+
   Future<String?> _jalankan(Future<void> Function() aksi) async {
     try {
       await aksi();

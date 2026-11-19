@@ -59,7 +59,7 @@ class ProdukCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 produk.pakaiStok
-                    ? _Stok(produk.stok)
+                    ? _Stok(produk.stok, produk.satuanTampil)
                     : _Ketersediaan(produk.tersedia),
               ],
             ),
@@ -152,9 +152,10 @@ class _Pil extends StatelessWidget {
 }
 
 class _Stok extends StatelessWidget {
-  const _Stok(this.stok);
+  const _Stok(this.stok, this.satuan);
 
   final int stok;
+  final String satuan;
 
   @override
   Widget build(BuildContext context) {
@@ -189,10 +190,13 @@ class _Stok extends StatelessWidget {
               fontWeight: FontWeight.w700,
               color: warna,
             ),
-            children: const [
+            children: [
               TextSpan(
-                text: ' Tangkai',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                text: ' $satuan',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),

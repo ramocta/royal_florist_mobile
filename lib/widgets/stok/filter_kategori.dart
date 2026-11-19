@@ -11,12 +11,14 @@ class FilterKategori extends StatelessWidget {
     required this.kategoriTerpilih,
     required this.subTerpilih,
     required this.onPilih,
+    required this.onTambah,
   });
 
   final List<Kategori> kategori;
   final Kategori? kategoriTerpilih;
   final SubKategori? subTerpilih;
   final void Function(Kategori?, SubKategori?) onPilih;
+  final VoidCallback onTambah;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +37,13 @@ class FilterKategori extends StatelessWidget {
             const SizedBox(width: 10),
             _chipKategori(k),
           ],
+          const SizedBox(width: 10),
+          _Chip(
+            label: 'Kategori',
+            ikon: Icons.add_rounded,
+            aktif: false,
+            onTap: onTambah,
+          ),
         ],
       ),
     );

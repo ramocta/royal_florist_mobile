@@ -38,7 +38,14 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
   String? _error;
 
   Produk? get _edit => widget.produk;
-  bool get _pakaiStok => _sub?.pakaiStok ?? false;
+  bool get _pakaiStok {
+    final sub = _sub;
+    final kategori = _kategori;
+    if (sub != null) return sub.pakaiStok;
+    return kategori != null && kategori.subs.isEmpty && kategori.pakaiStok;
+  }
+
+  String get _satuan => _sub != null ? 'tangkai' : 'pcs';
   bool get _namaOtomatis =>
       _kategori != null && _sub != null && !_sub!.pakaiStok;
 
@@ -346,7 +353,7 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
                   controller: _stok,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: _dekor('Stok (tangkai)'),
+                  decoration: _dekor('Stok ($_satuan)'),
                 )
               else
                 Container(

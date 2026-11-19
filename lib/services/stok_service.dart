@@ -35,6 +35,11 @@ class StokService {
 
   Future<void> hapus(int id) => ApiClient.delete('/karyawan/produk/$id');
 
+  Future<void> tambahKategori(String nama, bool pakaiStok) => ApiClient.post(
+    '/karyawan/kategori',
+    body: {'nama': nama, 'pakai_stok': pakaiStok ? 1 : 0},
+  );
+
   Future<FormData> _form(Map<String, dynamic> data, XFile? foto) async =>
       FormData.fromMap({
         ...data,

@@ -1,12 +1,11 @@
-﻿
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import 'auth/login_page.dart';
 import 'core/shared/app_theme.dart';
 import 'pages/beranda/beranda_page.dart';
-import 'pages/stok/update_stok_page.dart';
 import 'pages/pesanan/status_order_page.dart';
 import 'pages/ringkasan/order_summary_page.dart';
+import 'pages/stok/update_stok_page.dart';
 
 class App extends StatelessWidget {
   const App({super.key, this.initialRoute = '/login'});
@@ -34,33 +33,25 @@ class App extends StatelessWidget {
       ),
       initialRoute: initialRoute,
       onGenerateRoute: (settings) {
-        late final Widget page;
-
+        final Widget page;
         switch (settings.name) {
           case '/login':
             page = const LoginPage();
             break;
-
           case '/beranda':
             page = const BerandaPage();
             break;
-
           case '/update-stok':
             page = const UpdateStokPage();
             break;
-
           case '/status-order':
             page = const StatusOrderPage();
             break;
-          
           case '/order-summary':
             page = const OrderSummaryPage();
             break;
-
           default:
-            page = _PlaceholderPage(
-              title: settings.name ?? 'Halaman tidak ditemukan',
-            );
+            page = _PlaceholderPage(title: settings.name ?? '');
         }
 
         return PageRouteBuilder(
@@ -83,9 +74,7 @@ class _PlaceholderPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text('Halaman $title belum dibuat'),
-      ),
+      body: Center(child: Text('Halaman $title belum dibuat')),
     );
   }
 }

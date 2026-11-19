@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/produk_model.dart';
@@ -17,7 +17,9 @@ import '../../widgets/stok/produk_card.dart';
 import '../../widgets/stok/status_filter_sheet.dart';
 import '../../widgets/stok/stok_header.dart';
 import '../../widgets/stok/stok_search_bar.dart';
+import '../../widgets/stok/tambah_kategori_dialog.dart';
 import 'detail_produk_page.dart';
+
 
 class UpdateStokPage extends StatefulWidget {
   const UpdateStokPage({super.key});
@@ -51,6 +53,16 @@ class _UpdateStokPageState extends State<UpdateStokPage> {
     );
     if (berhasil == true && mounted)
       tampilkanInfo(context, '${p.nama} berhasil diperbarui');
+  }
+
+  Future<void> _tambahKategori() async {
+    final berhasil = await showDialog<bool>(
+      context: context,
+      builder: (_) => const TambahKategoriDialog(),
+    );
+    if (berhasil == true && mounted) {
+      tampilkanInfo(context, 'Kategori berhasil ditambahkan');
+    }
   }
 
   Future<void> _form([Produk? p]) async {
@@ -135,6 +147,7 @@ class _UpdateStokPageState extends State<UpdateStokPage> {
                           kategoriTerpilih: p.kategoriTerpilih,
                           subTerpilih: p.subTerpilih,
                           onPilih: p.pilihKategori,
+                          onTambah: _tambahKategori,
                         ),
                       ),
                       const SizedBox(height: 16),

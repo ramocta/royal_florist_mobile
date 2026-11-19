@@ -1,4 +1,4 @@
-
+﻿
 import 'package:flutter/material.dart';
 
 import 'auth/login_page.dart';
@@ -6,6 +6,7 @@ import 'core/shared/app_theme.dart';
 import 'pages/beranda/beranda_page.dart';
 import 'pages/stok/update_stok_page.dart';
 import 'pages/pesanan/status_order_page.dart';
+import 'pages/ringkasan/order_summary_page.dart';
 
 class App extends StatelessWidget {
   const App({super.key, this.initialRoute = '/login'});
@@ -50,6 +51,10 @@ class App extends StatelessWidget {
 
           case '/status-order':
             page = const StatusOrderPage();
+            break;
+          
+          case '/order-summary':
+            page = const OrderSummaryPage();
             break;
 
           default:

@@ -77,6 +77,7 @@ class _KonfirmasiPesananPageState extends State<KonfirmasiPesananPage> {
         context,
         MaterialPageRoute(
           builder: (_) => PesananBerhasilPage(
+            idOrder: widget.idOrder,
             invoice: widget.invoice,
             nama: widget.nama,
             total: widget.total,

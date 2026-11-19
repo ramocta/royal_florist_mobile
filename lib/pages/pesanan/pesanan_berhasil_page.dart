@@ -1,7 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import '../../core/shared/app_colors.dart';
+import 'struk_loader_page.dart';
 
 class PesananBerhasilPage extends StatelessWidget {
+  final dynamic idOrder;
   final String invoice;
   final String nama;
   final String total;
@@ -9,11 +11,25 @@ class PesananBerhasilPage extends StatelessWidget {
 
   const PesananBerhasilPage({
     super.key,
+    this.idOrder,
     this.invoice = 'INV-20261004-001',
     this.nama = 'Siti Maisyaroh',
     this.total = 'Rp75.000',
     this.status = 'Dikonfirmasi',
   });
+
+  void _bukaStruk(BuildContext context) {
+    if (idOrder == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ID pesanan tidak ditemukan')),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => StrukLoaderPage(idOrder: idOrder)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,9 +122,7 @@ class PesananBerhasilPage extends StatelessWidget {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: buka StrukPage (lib/pages/pesanan/struk_page.dart)
-                      },
+                      onPressed: () => _bukaStruk(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.maroon,
                         foregroundColor: AppColors.white,
@@ -162,4 +176,3 @@ class PesananBerhasilPage extends StatelessWidget {
     );
   }
 }
-

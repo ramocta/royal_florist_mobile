@@ -1,2 +1,0 @@
-﻿// Figma: Ringkasan otomatis
-

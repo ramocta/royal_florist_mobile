@@ -80,6 +80,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/login/
 
   fonts:
     - family: Poppins

@@ -5,6 +5,7 @@ import 'app.dart';
 import 'auth/auth_provider.dart';
 import 'core/api/api_client.dart';
 import 'providers/beranda_provider.dart';
+import 'providers/profil_provider.dart';
 import 'providers/stok_provider.dart';
 
 Future<void> main() async {
@@ -27,6 +28,7 @@ Future<void> main() async {
         ChangeNotifierProvider<AuthProvider>.value(value: auth),
         ChangeNotifierProvider(create: (_) => BerandaProvider()),
         ChangeNotifierProvider(create: (_) => StokProvider()),
+        ChangeNotifierProvider(create: (_) => ProfilProvider()),
       ],
       child: App(initialRoute: auth.sudahLogin ? '/beranda' : '/login'),
     ),

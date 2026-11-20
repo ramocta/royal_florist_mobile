@@ -2,7 +2,6 @@
 
 import '../../services/pesanan_service.dart';
 import '../../widgets/common/bottom_nav_bar.dart';
-import '../../widgets/pesanan/status_order_banner.dart';
 import '../../widgets/pesanan/status_order_card.dart';
 import '../../widgets/pesanan/status_order_filters.dart';
 import '../../widgets/pesanan/status_order_header.dart';
@@ -20,6 +19,10 @@ class StatusOrderPage extends StatefulWidget {
 }
 
 class _StatusOrderPageState extends State<StatusOrderPage> {
+  /// true  = pesanan "Menunggu Pembayaran" tidak ditampilkan sama sekali.
+  /// false = tetap tampil di tab Semua dengan label "Menunggu Pembayaran".
+  static const bool _sembunyikanBelumBayar = true;
+
   final PesananService _service = PesananService();
   final TextEditingController _searchController = TextEditingController();
 
@@ -30,14 +33,11 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
 
   final List<String> _filters = [
     'Semua',
-    'Menunggu Pembayaran',
     'Menunggu Konfirmasi',
-    'Dikonfirmasi',
     'Diproses',
-    'Dalam Pengiriman',
-    'Siap Diambil',
     'Selesai',
     'Dibatalkan',
+    'Siap Diambil',
   ];
 
   @override
@@ -62,7 +62,19 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
       final data = await _service.getPesanan();
       if (!mounted) return;
       setState(() {
-        _pesanan = data;
+        // Pesanan yang belum dibayar disembunyikan supaya jumlahnya
+        // sinkron dengan "Pesanan Baru" di Beranda.
+        _pesanan = _sembunyikanBelumBayar
+            ? data
+                  .where(
+                    (o) =>
+                        StatusOrderHelper.status(
+                          o['status_pesanan'] ?? o['status'],
+                        ) !=
+                        'Menunggu Pembayaran',
+                  )
+                  .toList()
+            : data;
         _loading = false;
       });
     } catch (e) {
@@ -91,7 +103,7 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
     }).toList();
   }
 
-  /// Jumlah pesanan per filter (untuk badge di chip & banner).
+  /// Jumlah pesanan per filter (untuk badge di chip).
   int _hitung(String filter) {
     if (filter == 'Semua') return _pesanan.length;
     return _pesanan
@@ -157,7 +169,6 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
 
   Widget _buildBody() {
     final orders = _filteredOrders;
-    final menungguBayar = _hitung('Menunggu Pembayaran');
 
     return RefreshIndicator(
       color: StatusOrderStyle.maroon,
@@ -166,16 +177,6 @@ class _StatusOrderPageState extends State<StatusOrderPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(top: 8, bottom: 24),
         children: [
-          if (!_loading && _error == null && menungguBayar > 0) ...[
-            Padding(
-              padding: StatusOrderStyle.pagePadding,
-              child: StatusOrderBanner(
-                jumlah: menungguBayar,
-                onTap: () => setState(() => _filter = 'Menunggu Pembayaran'),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
           Padding(
             padding: StatusOrderStyle.pagePadding,
             child: StatusOrderSearch(

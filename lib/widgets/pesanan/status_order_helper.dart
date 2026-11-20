@@ -14,11 +14,9 @@ class StatusOrderHelper {
       case 'menunggu_konfirmasi':
         return 'Menunggu Konfirmasi';
       case 'dikonfirmasi':
-        return 'Dikonfirmasi';
       case 'diproses':
-        return 'Diproses';
       case 'dalam_pengiriman':
-        return 'Dalam Pengiriman';
+        return 'Diproses';
       case 'siap_diambil':
         return 'Siap Diambil';
       case 'selesai':
@@ -35,10 +33,8 @@ class StatusOrderHelper {
       case 'Menunggu Pembayaran':
       case 'Menunggu Konfirmasi':
         return Colors.orange;
-      case 'Dikonfirmasi':
-        return Colors.blue;
       case 'Diproses':
-      case 'Dalam Pengiriman':
+        return Colors.blue;
       case 'Siap Diambil':
         return Colors.purple;
       case 'Selesai':

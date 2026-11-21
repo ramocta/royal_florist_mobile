@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/produk_model.dart';
@@ -19,7 +19,7 @@ import '../../widgets/stok/stok_header.dart';
 import '../../widgets/stok/stok_search_bar.dart';
 import '../../widgets/stok/tambah_kategori_dialog.dart';
 import 'detail_produk_page.dart';
-
+import 'tambah_produk_page.dart';
 
 class UpdateStokPage extends StatefulWidget {
   const UpdateStokPage({super.key});
@@ -65,10 +65,10 @@ class _UpdateStokPageState extends State<UpdateStokPage> {
     }
   }
 
-  Future<void> _form([Produk? p]) async {
+  Future<void> _buka(Widget halaman) async {
     final pesan = await Navigator.push<String>(
       context,
-      MaterialPageRoute(builder: (_) => DetailProdukPage(produk: p)),
+      MaterialPageRoute(builder: (_) => halaman),
     );
     if (pesan != null && mounted) tampilkanInfo(context, pesan);
   }
@@ -93,15 +93,46 @@ class _UpdateStokPageState extends State<UpdateStokPage> {
     return Scaffold(
       backgroundColor: BerandaStyle.latarBawah,
       bottomNavigationBar: const BottomNavBar(currentIndex: 1),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _form,
-        backgroundColor: BerandaStyle.rose,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text(
-          'Tambah',
-          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600),
-        ),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'fab_kategori',
+            onPressed: _tambahKategori,
+            backgroundColor: Colors.white,
+            foregroundColor: BerandaStyle.rose,
+            shape: StadiumBorder(
+              side: BorderSide(
+                color: BerandaStyle.rose.withValues(alpha: 0.35),
+                width: 1.2,
+              ),
+            ),
+            icon: const Icon(Icons.add_rounded),
+            label: const Text(
+              'Kategori',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton.extended(
+            heroTag: 'fab_tambah',
+            onPressed: () => _buka(const TambahProdukPage()),
+            backgroundColor: BerandaStyle.rose,
+            foregroundColor: Colors.white,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text(
+              'Tambah',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
       body: LatarPink(
         child: SafeArea(
@@ -114,7 +145,7 @@ class _UpdateStokPageState extends State<UpdateStokPage> {
                   onRefresh: () => p.muat(),
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 152),
                     children: [
                       Muncul(
                         key: const ValueKey('header'),
@@ -147,7 +178,6 @@ class _UpdateStokPageState extends State<UpdateStokPage> {
                           kategoriTerpilih: p.kategoriTerpilih,
                           subTerpilih: p.subTerpilih,
                           onPilih: p.pilihKategori,
-                          onTambah: _tambahKategori,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -161,7 +191,8 @@ class _UpdateStokPageState extends State<UpdateStokPage> {
                             child: ProdukCard(
                               produk: produk,
                               onKelola: () => _kelola(produk),
-                              onEdit: () => _form(produk),
+                              onEdit: () =>
+                                  _buka(DetailProdukPage(produk: produk)),
                               onHapus: () => _hapus(produk),
                             ),
                           ),

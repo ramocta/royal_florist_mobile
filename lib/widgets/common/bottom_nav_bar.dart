@@ -12,7 +12,7 @@ class BottomNavBar extends StatelessWidget {
     '/beranda',
     '/update-stok',
     '/status-order',
-    '/order-summary',
+    '/ringkasan',
     '/profil',
   ];
 

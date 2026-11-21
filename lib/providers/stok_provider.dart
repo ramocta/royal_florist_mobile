@@ -107,20 +107,21 @@ class StokProvider extends ChangeNotifier {
     return err;
   }
 
-  Future<String?> simpanProduk({
-    int? id,
-    required Map<String, dynamic> data,
-    XFile? foto,
-  }) => _jalankan(
-    () => id == null
-        ? _service.tambah(data, foto: foto)
-        : _service.ubah(id, data, foto: foto),
-  );
+  Future<String?> tambahBanyak(
+    List<Map<String, dynamic>> baris,
+    List<XFile?> foto,
+  ) => _jalankan(() => _service.tambahBanyak(baris, foto));
+
+  Future<String?> ubahProduk(int id, Map<String, dynamic> data, XFile? foto) =>
+      _jalankan(() => _service.ubah(id, data, foto: foto));
 
   Future<String?> hapus(Produk p) => _jalankan(() => _service.hapus(p.id));
 
-  Future<String?> tambahKategori(String nama, bool pakaiStok) =>
-      _jalankan(() => _service.tambahKategori(nama, pakaiStok));
+  Future<String?> tambahKategori(
+    String nama,
+    bool pakaiStok, {
+    List<String> jenis = const [],
+  }) => _jalankan(() => _service.tambahKategori(nama, pakaiStok, jenis: jenis));
 
   Future<String?> _jalankan(Future<void> Function() aksi) async {
     try {

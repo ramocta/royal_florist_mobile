@@ -14,7 +14,12 @@ class TambahKategoriDialog extends StatefulWidget {
 }
 
 class _TambahKategoriDialogState extends State<TambahKategoriDialog> {
+  static const _maksJenis = 20;
+
   final _nama = TextEditingController();
+  final _jenisInput = TextEditingController();
+  final _jenisFokus = FocusNode();
+  final List<String> _jenis = [];
   bool _pakaiStok = false;
   bool _menyimpan = false;
   String? _error;
@@ -22,7 +27,32 @@ class _TambahKategoriDialogState extends State<TambahKategoriDialog> {
   @override
   void dispose() {
     _nama.dispose();
+    _jenisInput.dispose();
+    _jenisFokus.dispose();
     super.dispose();
+  }
+
+  /// Memindahkan isi kolom jenis ke daftar. Mengembalikan false bila ditolak.
+  bool _tambahJenis({bool fokus = true}) {
+    final teks = _jenisInput.text.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (teks.isEmpty) return true;
+
+    if (_jenis.any((j) => j.toLowerCase() == teks.toLowerCase())) {
+      setState(() => _error = 'Jenis "$teks" sudah ditambahkan.');
+      return false;
+    }
+    if (_jenis.length >= _maksJenis) {
+      setState(() => _error = 'Maksimal $_maksJenis jenis per kategori.');
+      return false;
+    }
+
+    setState(() {
+      _jenis.add(teks);
+      _jenisInput.clear();
+      _error = null;
+    });
+    if (fokus) _jenisFokus.requestFocus();
+    return true;
   }
 
   Future<void> _simpan() async {
@@ -31,6 +61,7 @@ class _TambahKategoriDialogState extends State<TambahKategoriDialog> {
       setState(() => _error = 'Nama kategori wajib diisi.');
       return;
     }
+    if (!_tambahJenis(fokus: false)) return;
     setState(() {
       _menyimpan = true;
       _error = null;
@@ -38,6 +69,7 @@ class _TambahKategoriDialogState extends State<TambahKategoriDialog> {
     final err = await context.read<StokProvider>().tambahKategori(
       nama,
       _pakaiStok,
+      jenis: List.of(_jenis),
     );
     if (!mounted) return;
     if (err == null) {
@@ -92,7 +124,129 @@ class _TambahKategoriDialogState extends State<TambahKategoriDialog> {
           dipilih: _pakaiStok,
           onTap: () => setState(() => _pakaiStok = true),
         ),
+        const SizedBox(height: 16),
+        _bagianJenis(),
       ],
+    );
+  }
+
+  Widget _bagianJenis() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Jenis (opsional)',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.maroon,
+          ),
+        ),
+        const Text(
+          'Jika diisi, kategori ini tampil sebagai dropdown jenis.',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 11,
+            color: BerandaStyle.teksRedup,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _jenisInput,
+                focusNode: _jenisFokus,
+                enabled: !_menyimpan,
+                maxLength: 50,
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _tambahJenis(),
+                decoration: InputDecoration(
+                  hintText: 'Mis. Mawar, Lily',
+                  counterText: '',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton.filled(
+              onPressed: _menyimpan ? null : () => _tambahJenis(),
+              style: IconButton.styleFrom(backgroundColor: AppColors.maroon),
+              icon: const Icon(Icons.add_rounded),
+              tooltip: 'Tambah jenis',
+            ),
+          ],
+        ),
+        if (_jenis.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final j in _jenis)
+                  _ChipJenis(
+                    label: j,
+                    onHapus: _menyimpan
+                        ? null
+                        : () => setState(() => _jenis.remove(j)),
+                  ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _ChipJenis extends StatelessWidget {
+  const _ChipJenis({required this.label, required this.onHapus});
+
+  final String label;
+  final VoidCallback? onHapus;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
+      decoration: BoxDecoration(
+        color: BerandaStyle.rose.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: BerandaStyle.rose.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 12,
+              color: AppColors.maroon,
+            ),
+          ),
+          const SizedBox(width: 4),
+          InkWell(
+            onTap: onHapus,
+            customBorder: const CircleBorder(),
+            child: const Padding(
+              padding: EdgeInsets.all(2),
+              child: Icon(
+                Icons.close_rounded,
+                size: 16,
+                color: AppColors.maroon,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

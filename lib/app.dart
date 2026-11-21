@@ -1,5 +1,4 @@
-﻿
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import 'auth/login_page.dart';
 import 'core/shared/app_theme.dart';
@@ -36,7 +35,6 @@ class App extends StatelessWidget {
       initialRoute: initialRoute,
       onGenerateRoute: (settings) {
         final Widget page;
-
         switch (settings.name) {
           case '/login':
             page = const LoginPage();
@@ -50,6 +48,7 @@ class App extends StatelessWidget {
           case '/status-order':
             page = const StatusOrderPage();
             break;
+          case '/ringkasan':
           case '/order-summary':
             page = const OrderSummaryPage();
             break;
@@ -57,11 +56,8 @@ class App extends StatelessWidget {
             page = const ProfilPage();
             break;
           default:
-            page = _PlaceholderPage(
-              title: settings.name ?? '',
-            );
+            page = _PlaceholderPage(title: settings.name ?? '');
         }
-
         return PageRouteBuilder(
           settings: settings,
           pageBuilder: (_, __, ___) => page,
@@ -75,16 +71,13 @@ class App extends StatelessWidget {
 
 class _PlaceholderPage extends StatelessWidget {
   const _PlaceholderPage({required this.title});
-
   final String title;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text('Halaman $title belum dibuat'),
-      ),
+      body: Center(child: Text('Halaman $title belum dibuat')),
     );
   }
 }

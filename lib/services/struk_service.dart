@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../models/struk_model.dart';
 
@@ -21,29 +20,44 @@ class StrukService {
     return 'Rp$s';
   }
 
-  /// 0812... -> 62812...
-  static String normalisasiNomor(String input) {
-    var n = input.replaceAll(RegExp(r'[^0-9]'), '');
-    if (n.startsWith('0')) n = '62${n.substring(1)}';
-    return n;
-  }
-
   // ---------------------------------------------------------------
   // CETAK (printer atau simpan PDF)
   // ---------------------------------------------------------------
   static Future<Uint8List> buatPdf(StrukModel s) async {
     final doc = pw.Document();
 
-    pw.Widget baris(String kiri, String kanan, {bool bold = false}) {
-      final style = pw.TextStyle(
-        fontSize: 9,
-        fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
-      );
-      return pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-        children: [pw.Text(kiri, style: style), pw.Text(kanan, style: style)],
+    pw.Widget baris(String kiri, String kanan, {bool boldKanan = false}) {
+      return pw.Padding(
+        padding: const pw.EdgeInsets.symmetric(vertical: 1.5),
+        child: pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(kiri, style: const pw.TextStyle(fontSize: 9)),
+            pw.SizedBox(width: 8),
+            pw.Expanded(
+              child: pw.Text(
+                kanan,
+                textAlign: pw.TextAlign.right,
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight:
+                      boldKanan ? pw.FontWeight.bold : pw.FontWeight.normal,
+                ),
+              ),
+            ),
+          ],
+        ),
       );
     }
+
+    pw.Widget garis() => pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(vertical: 6),
+          child: pw.Divider(
+            height: 1,
+            thickness: 0.6,
+            borderStyle: pw.BorderStyle.dashed,
+          ),
+        );
 
     doc.addPage(
       pw.Page(
@@ -55,36 +69,54 @@ class StrukService {
             pw.Center(
               child: pw.Text('ROYAL FLORIST',
                   style: pw.TextStyle(
-                      fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      fontSize: 15,
+                      fontWeight: pw.FontWeight.bold,
+                      letterSpacing: 1.5)),
             ),
             pw.Center(
               child: pw.Text('Fresh Flowers, Better Feelings',
-                  style: const pw.TextStyle(fontSize: 8)),
+                  style: pw.TextStyle(
+                      fontSize: 8, fontStyle: pw.FontStyle.italic)),
             ),
-            pw.SizedBox(height: 8),
+            garis(),
             pw.Center(
               child: pw.Text('STRUK PESANAN',
                   style: pw.TextStyle(
                       fontSize: 10, fontWeight: pw.FontWeight.bold)),
             ),
-            pw.SizedBox(height: 8),
-            baris('No. Invoice', s.invoice),
-            baris('Tanggal', s.tanggal),
-            baris('Pelanggan', s.pelanggan),
-            baris('Alamat', s.alamat),
-            pw.Divider(),
+            pw.SizedBox(height: 6),
+            baris('No. Invoice', s.invoice, boldKanan: true),
+            baris('Tanggal', s.tanggal, boldKanan: true),
+            baris('Pelanggan', s.pelanggan, boldKanan: true),
+            baris('Alamat', s.alamat, boldKanan: true),
+            garis(),
             for (final e in s.items) ...[
-              pw.Text(e.nama, style: const pw.TextStyle(fontSize: 9)),
+              pw.Text(e.nama,
+                  style: pw.TextStyle(
+                      fontSize: 9, fontWeight: pw.FontWeight.bold)),
               baris('${e.qty} x ${rp(e.harga)}', rp(e.subtotal)),
               pw.SizedBox(height: 4),
             ],
-            pw.Divider(),
-            baris('TOTAL', rp(s.total), bold: true),
-            pw.SizedBox(height: 12),
+            garis(),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('TOTAL',
+                    style: pw.TextStyle(
+                        fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                pw.Text(rp(s.total),
+                    style: pw.TextStyle(
+                        fontSize: 12, fontWeight: pw.FontWeight.bold)),
+              ],
+            ),
+            garis(),
+            pw.SizedBox(height: 4),
             pw.Center(
-              child: pw.Text('Terima kasih telah mempercayai Royal Florist',
-                  style: const pw.TextStyle(fontSize: 8),
-                  textAlign: pw.TextAlign.center),
+              child: pw.Text(
+                'Terima kasih telah mempercayai\nRoyal Florist',
+                style: const pw.TextStyle(fontSize: 8),
+                textAlign: pw.TextAlign.center,
+              ),
             ),
           ],
         ),
@@ -101,39 +133,5 @@ class StrukService {
       name: s.invoice,
       onLayout: (_) => buatPdf(s),
     );
-  }
-
-  // ---------------------------------------------------------------
-  // WHATSAPP
-  // ---------------------------------------------------------------
-  static String teksStruk(StrukModel s) {
-    final sb = StringBuffer()
-      ..writeln('*ROYAL FLORIST*')
-      ..writeln('_Fresh Flowers, Better Feelings_')
-      ..writeln()
-      ..writeln('*STRUK PESANAN*')
-      ..writeln('No. Invoice : ${s.invoice}')
-      ..writeln('Tanggal     : ${s.tanggal}')
-      ..writeln('Pelanggan   : ${s.pelanggan}')
-      ..writeln()
-      ..writeln('*Rincian:*');
-    for (final e in s.items) {
-      sb.writeln('- ${e.nama} (${e.qty} x ${rp(e.harga)}) = ${rp(e.subtotal)}');
-    }
-    sb
-      ..writeln()
-      ..writeln('*Total: ${rp(s.total)}*')
-      ..writeln()
-      ..writeln('Terima kasih telah mempercayai Royal Florist 🌸');
-    return sb.toString();
-  }
-
-  /// Membuka WhatsApp ke nomor pelanggan dengan isi struk sudah terisi.
-  static Future<bool> kirimWhatsApp(StrukModel s) async {
-    final nomor = normalisasiNomor(s.noWa);
-    final uri = Uri.parse(
-      'https://wa.me/$nomor?text=${Uri.encodeComponent(teksStruk(s))}',
-    );
-    return launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }

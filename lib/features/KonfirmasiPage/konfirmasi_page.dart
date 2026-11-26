@@ -3,7 +3,7 @@ import 'dart:typed_data'; // [BARU]
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // [BARU]
 import '../../core/app_colors.dart';
-import '../pesanan/pesanan_berhasil_page.dart';
+import '../../pages/pesanan/pesanan_berhasil_page.dart';
 
 // [BARU] Data form, dikirim ke onSimpan supaya bisa disambung ke API tim.
 class KonfirmasiData {
@@ -29,6 +29,7 @@ class KonfirmasiPage extends StatefulWidget {
   final String nama;
   final String tanggal;
   final String total;
+  final dynamic idOrder; // [BARU] dipakai halaman sukses untuk membuka struk
   final String? statusLabel; // [BARU] badge kanan atas, null = disembunyikan
   final bool dikirim; // [BARU] true: opsi ke-3 "Dalam Pengiriman"
   final Future<void> Function(KonfirmasiData data)? onSimpan; // [BARU]
@@ -39,6 +40,7 @@ class KonfirmasiPage extends StatefulWidget {
     this.nama = 'Siti Maisyaroh',
     this.tanggal = '04 Okt 2026 • 14:32',
     this.total = 'Rp75.000',
+    this.idOrder, // [BARU]
     this.statusLabel, // [BARU]
     this.dikirim = false, // [BARU] false = perilaku lama (Siap Diambil)
     this.onSimpan, // [BARU]
@@ -97,7 +99,8 @@ class _KonfirmasiPageState extends State<KonfirmasiPage> {
     String? isi(TextEditingController c) =>
         c.text.trim().isEmpty ? null : c.text.trim();
 
-    await widget.onSimpan?.call(KonfirmasiData(
+    try {
+      await widget.onSimpan?.call(KonfirmasiData(
       status: _selected,
       namaKurir: _perluKurir ? isi(_kurirCtrl) : null,
       noHpKurir: _perluKurir ? isi(_hpCtrl) : null,
@@ -105,12 +108,20 @@ class _KonfirmasiPageState extends State<KonfirmasiPage> {
       fotoBytes: _foto,
       pesan: isi(_catatanCtrl),
     ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menyimpan: $e')),
+      );
+      return;
+    }
     if (!mounted) return;
 
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (_) => PesananBerhasilPage(
+          idOrder: widget.idOrder, // [BARU]
           invoice: widget.invoice,
           nama: widget.nama,
           total: widget.total,

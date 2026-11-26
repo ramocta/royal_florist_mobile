@@ -25,7 +25,7 @@ class StrukReceiptCard extends StatelessWidget {
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(22, 36, 22, 28),
+          padding: const EdgeInsets.fromLTRB(22, 34, 22, 28),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(26),
@@ -42,7 +42,15 @@ class StrukReceiptCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const StrukBrand(),
-              const SizedBox(height: 26),
+              const SizedBox(height: 10),
+              const Center(
+                child: Icon(
+                  Icons.local_florist_rounded,
+                  color: Color(0xFFD4537E),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(height: 18),
               Center(
                 child: Text(
                   'STRUK PESANAN',
@@ -59,35 +67,42 @@ class StrukReceiptCard extends StatelessWidget {
               StrukInfoRow(label: 'Pelanggan', value: struk.pelanggan),
               StrukInfoRow(label: 'Alamat', value: struk.alamat),
               const SizedBox(height: 10),
-              const Divider(color: StrukStyle.line, height: 1),
+              const _GarisPutus(),
               const SizedBox(height: 32),
               StrukTable(struk: struk),
               const SizedBox(height: 16),
-              const Divider(color: StrukStyle.line, height: 1),
+              const _GarisPutus(),
               const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: StrukStyle.dark,
-                    ),
-                  ),
-                  Text(
-                    _rp(struk.total),
-                    style: GoogleFonts.cormorantGaramond(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: StrukStyle.dark,
-                    ),
-                  ),
-                ],
-              ),
+              Container(
+  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+  decoration: BoxDecoration(
+    color: StrukStyle.tableHeader,
+    borderRadius: BorderRadius.circular(12),
+  ),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        'Total',
+        style: GoogleFonts.poppins(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          color: StrukStyle.dark,
+        ),
+      ),
+      Text(
+        _rp(struk.total),
+        style: GoogleFonts.poppins(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: StrukStyle.maroon,
+        ),
+      ),
+    ],
+  ),
+),
               const SizedBox(height: 22),
-              const Divider(color: StrukStyle.line, height: 1),
+              const _GarisPutus(),
               const SizedBox(height: 28),
               const StrukFooter(),
             ],
@@ -110,6 +125,31 @@ class StrukReceiptCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+class _GarisPutus extends StatelessWidget {
+  const _GarisPutus();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, c) {
+        const lebar = 5.0;
+        const jarak = 4.0;
+        final jumlah = (c.maxWidth / (lebar + jarak)).floor();
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(
+            jumlah,
+            (_) => Container(
+              width: lebar,
+              height: 2,
+              color: const Color(0xFFDDBFC4),
+            ),
+          ),
+        );
+      },
     );
   }
 }

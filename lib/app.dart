@@ -4,6 +4,7 @@ import 'auth/login_page.dart';
 import 'core/shared/app_theme.dart';
 import 'pages/beranda/beranda_page.dart';
 import 'pages/pesanan/status_order_page.dart';
+import 'pages/profil/profil_page.dart';
 import 'pages/ringkasan/order_summary_page.dart';
 import 'pages/stok/update_stok_page.dart';
 
@@ -47,13 +48,16 @@ class App extends StatelessWidget {
           case '/status-order':
             page = const StatusOrderPage();
             break;
+          case '/ringkasan':
           case '/order-summary':
             page = const OrderSummaryPage();
+            break;
+          case '/profil':
+            page = const ProfilPage();
             break;
           default:
             page = _PlaceholderPage(title: settings.name ?? '');
         }
-
         return PageRouteBuilder(
           settings: settings,
           pageBuilder: (_, __, ___) => page,
@@ -67,7 +71,6 @@ class App extends StatelessWidget {
 
 class _PlaceholderPage extends StatelessWidget {
   const _PlaceholderPage({required this.title});
-
   final String title;
 
   @override

@@ -19,8 +19,23 @@ class StokService {
     );
   }
 
-  Future<void> tambah(Map<String, dynamic> data, {XFile? foto}) async =>
-      ApiClient.postForm('/karyawan/produk', await _form(data, foto));
+  Future<void> tambahBanyak(
+    List<Map<String, dynamic>> baris,
+    List<XFile?> foto,
+  ) async {
+    final isi = <String, dynamic>{};
+    for (var i = 0; i < baris.length; i++) {
+      baris[i].forEach((k, v) => isi['items[$i][$k]'] = v);
+      final f = foto[i];
+      if (f != null) {
+        isi['items[$i][foto_produk]'] = MultipartFile.fromBytes(
+          await f.readAsBytes(),
+          filename: f.name,
+        );
+      }
+    }
+    await ApiClient.postForm('/karyawan/produk', FormData.fromMap(isi));
+  }
 
   Future<void> ubah(int id, Map<String, dynamic> data, {XFile? foto}) async =>
       ApiClient.postForm('/karyawan/produk/$id', await _form(data, foto));
@@ -35,9 +50,17 @@ class StokService {
 
   Future<void> hapus(int id) => ApiClient.delete('/karyawan/produk/$id');
 
-  Future<void> tambahKategori(String nama, bool pakaiStok) => ApiClient.post(
+  Future<void> tambahKategori(
+    String nama,
+    bool pakaiStok, {
+    List<String> jenis = const [],
+  }) => ApiClient.post(
     '/karyawan/kategori',
-    body: {'nama': nama, 'pakai_stok': pakaiStok ? 1 : 0},
+    body: {
+      'nama': nama,
+      'pakai_stok': pakaiStok ? 1 : 0,
+      if (jenis.isNotEmpty) 'jenis': jenis,
+    },
   );
 
   Future<FormData> _form(Map<String, dynamic> data, XFile? foto) async =>

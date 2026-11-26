@@ -1,4 +1,4 @@
-// Figma: Struk
+﻿// Figma: Struk
 import 'package:flutter/material.dart';
 
 import '../../models/struk_model.dart';
@@ -14,10 +14,22 @@ class StrukPage extends StatelessWidget {
   const StrukPage({super.key, this.struk = StrukModel.contoh});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: StrukStyle.bg,
-      body: SafeArea(
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: StrukStyle.bg,
+    body: Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFCE4EA),
+            Color(0xFFFFF0F3),
+            Color(0xFFFFFAFA),
+          ],
+        ),
+      ),
+      child: SafeArea(
         child: Column(
           children: [
             const StrukAppBar(),
@@ -29,13 +41,13 @@ class StrukPage extends StatelessWidget {
             ),
             StrukButtons(
               onCetak: () => _cetak(context),
-              onKirimWa: () => _kirimWa(context),
             ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   // =================================================================
   // AKSI
@@ -52,15 +64,6 @@ class StrukPage extends StatelessWidget {
       await StrukService.cetak(struk);
     } catch (e) {
       _snack(context, 'Gagal mencetak: $e');
-    }
-  }
-
-  Future<void> _kirimWa(BuildContext context) async {
-    try {
-      final ok = await StrukService.kirimWhatsApp(struk);
-      if (!ok) _snack(context, 'WhatsApp tidak bisa dibuka');
-    } catch (e) {
-      _snack(context, 'Gagal membuka WhatsApp: $e');
     }
   }
 }

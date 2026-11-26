@@ -79,27 +79,47 @@ class StrukReceiptCard extends StatelessWidget {
     color: StrukStyle.tableHeader,
     borderRadius: BorderRadius.circular(12),
   ),
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text(
-        'Total',
-        style: GoogleFonts.poppins(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: StrukStyle.dark,
+  child: Column(
+  children: [
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Subtotal Produk'),
+        Text(_rp(struk.subtotal)),
+      ],
+    ),
+    const SizedBox(height: 8),
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Ongkos Kirim'),
+        Text(_rp(struk.ongkir)),
+      ],
+    ),
+    const Divider(height: 20),
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Total',
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: StrukStyle.dark,
+          ),
         ),
-      ),
-      Text(
-        _rp(struk.total),
-        style: GoogleFonts.poppins(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: StrukStyle.maroon,
+        Text(
+          _rp(struk.total),
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: StrukStyle.maroon,
+          ),
         ),
-      ),
-    ],
-  ),
+      ],
+    ),
+  ],
+)
 ),
               const SizedBox(height: 22),
               const _GarisPutus(),

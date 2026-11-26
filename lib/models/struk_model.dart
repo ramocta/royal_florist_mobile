@@ -18,6 +18,7 @@ class StrukModel {
 
   /// Total dari server (total_harga). Dipakai kalau rincian produk kosong.
   final int? totalServer;
+  final int ongkir;
 
   const StrukModel({
     required this.invoice,
@@ -27,12 +28,13 @@ class StrukModel {
     required this.alamat,
     required this.items,
     this.totalServer,
+    this.ongkir = 0,
   });
 
-  int get total => items.isNotEmpty
-      ? items.fold(0, (sum, e) => sum + e.subtotal)
-      : (totalServer ?? 0);
+  int get subtotal =>
+    items.fold(0, (sum, e) => sum + e.subtotal);
 
+int get total => totalServer ?? (subtotal + ongkir);
   /// Membuat struk dari data pesanan (hasil GET /orders/{id}).
   factory StrukModel.fromOrder(Map<String, dynamic> m) {
     String teks(List<String> kunci, {String bawaan = '-'}) {
@@ -95,6 +97,9 @@ class StrukModel {
       }
     }
 
+        final jenisPengambilan = teks(['jenis_pengambilan'], bawaan: '');
+    final ongkir = jenisPengambilan == 'dikirim' ? 20000 : 0;
+
     return StrukModel(
       invoice: teks(['no_invoice', 'invoice']),
       tanggal: tanggal(),
@@ -103,6 +108,7 @@ class StrukModel {
       alamat: teks(['alamat_pengiriman', 'alamat']),
       items: items,
       totalServer: angka(m, ['total_harga', 'total']),
+      ongkir: ongkir,
     );
   }
 

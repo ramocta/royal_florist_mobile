@@ -1,4 +1,4 @@
-// Figma: Detail pesanan
+﻿// Figma: Detail pesanan
 import 'package:flutter/material.dart';
 
 import '../../core/api/api_client.dart';
@@ -224,6 +224,9 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
       alamat: _teks(['alamat_pengiriman', 'alamat']),
       catatan: _teks(['catatan_pelanggan', 'catatan']),
       produk: _daftarProduk(),
+      ongkir: _teks(['jenis_pengambilan'], bawaan: '') == 'dikirim'
+    ? 20000
+    : 0,
       totalServer: _angkaOrNull(_data, ['total_harga', 'total']),
       memuat: _memuat,
       onKonfirmasi: _bukaKonfirmasi,
@@ -243,6 +246,7 @@ class DetailPesananView extends StatelessWidget {
   final String alamat;
   final String catatan;
   final List<DetailProdukItem> produk;
+  final int ongkir;
 
   /// Total dari server (kolom total_harga). Dipakai kalau ada.
   final int? totalServer;
@@ -258,6 +262,7 @@ class DetailPesananView extends StatelessWidget {
     required this.alamat,
     required this.catatan,
     required this.produk,
+    required this.ongkir,
     this.tanggal = '',
     this.totalServer,
     this.memuat = false,
@@ -282,8 +287,10 @@ class DetailPesananView extends StatelessWidget {
   static TextStyle _t(double size, FontWeight w, Color c) =>
       TextStyle(fontFamily: 'Poppins', fontSize: size, fontWeight: w, color: c);
 
-  int get _total =>
-      totalServer ?? produk.fold<int>(0, (sum, e) => sum + e.subtotal);
+  int get _subtotal =>
+    produk.fold<int>(0, (sum, e) => sum + e.subtotal);
+
+int get _total => totalServer ?? (_subtotal + ongkir);
 
   bool get _bisaKonfirmasi => status == 'Menunggu Konfirmasi';
 
@@ -608,23 +615,75 @@ class DetailPesananView extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: const BoxDecoration(
-                    color: Colors.white24, shape: BoxShape.circle),
-                child: const Icon(Icons.payments_rounded,
-                    color: Colors.white, size: 18),
+                  color: Colors.white24,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.payments_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
               ),
               const SizedBox(width: 10),
-              Text('Total', style: _t(15, FontWeight.w600, Colors.white)),
+              Text(
+                'Rincian Pembayaran',
+                style: _t(15, FontWeight.w600, Colors.white),
+              ),
             ],
           ),
-          Text(_rp(_total), style: _t(19, FontWeight.w700, Colors.white)),
+          const SizedBox(height: 18),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Subtotal Produk',
+                style: _t(13, FontWeight.w500, Colors.white),
+              ),
+              Text(
+                _rp(_subtotal),
+                style: _t(13, FontWeight.w600, Colors.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Ongkos Kirim',
+                style: _t(13, FontWeight.w500, Colors.white),
+              ),
+              Text(
+                _rp(ongkir),
+                style: _t(13, FontWeight.w600, Colors.white),
+              ),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 14),
+            child: Divider(color: Colors.white54),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total Pembayaran',
+                style: _t(15, FontWeight.w700, Colors.white),
+              ),
+              Text(
+                _rp(_total),
+                style: _t(19, FontWeight.w700, Colors.white),
+              ),
+            ],
+          ),
         ],
       ),
     );

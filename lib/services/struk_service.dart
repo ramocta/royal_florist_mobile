@@ -98,6 +98,9 @@ class StrukService {
               pw.SizedBox(height: 4),
             ],
             garis(),
+            baris('Subtotal Produk', rp(s.subtotal)),
+            baris('Ongkos Kirim', rp(s.ongkir)),
+            garis(),
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [

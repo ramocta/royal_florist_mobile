@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import 'auth/login_page.dart';
+import 'features/KonfirmasiPage/konfirmasi_page.dart';
 import 'core/shared/app_theme.dart';
 import 'pages/beranda/beranda_page.dart';
 import 'pages/pesanan/status_order_page.dart';
@@ -48,6 +49,23 @@ class App extends StatelessWidget {
           case '/status-order':
             page = const StatusOrderPage();
             break;
+
+
+          case '/konfirmasi':
+            {
+              final args =
+                  (settings.arguments as Map<String, dynamic>?) ?? {};
+              page = KonfirmasiPage(
+                invoice: (args['invoice'] ?? 'INV-20261004-001').toString(),
+                nama: (args['nama'] ?? 'Pelanggan').toString(),
+                tanggal: (args['tanggal'] ?? '-').toString(),
+                total: (args['total'] ?? 'Rp0').toString(),
+                statusLabel: args['status']?.toString(),
+                dikirim: args['dikirim'] == true,
+              );
+              break;
+            }
+
           case '/ringkasan':
           case '/order-summary':
             page = const OrderSummaryPage();

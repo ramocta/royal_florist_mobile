@@ -5,7 +5,8 @@ import '../../core/api/api_client.dart';
 import '../../core/shared/app_colors.dart';
 import '../../widgets/beranda/beranda_style.dart';
 import '../../widgets/common/latar_pink.dart';
-import 'konfirmasi_pesanan_page.dart';
+import '../../features/KonfirmasiPage/konfirmasi_page.dart';
+import '../../services/pesanan_service.dart';
 
 // =====================================================================
 // Model satu baris produk
@@ -162,6 +163,20 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
     return '${dua(l.day)} ${bulan[l.month - 1]} ${l.year} • ${dua(l.hour)}:${dua(l.minute)}';
   }
 
+  /// Backend: kolom jenis_pengambilan bernilai 'dikirim' atau 'ambil_di_toko'.
+  bool _dikirim() {
+    final metode = _teks(
+      ['jenis_pengambilan', 'metode_pengiriman', 'metode'],
+      bawaan: '',
+    ).toLowerCase();
+    if (metode.isNotEmpty) {
+      return metode.contains('kirim') ||
+          metode.contains('antar') ||
+          metode.contains('delivery');
+    }
+    return false; // data jenis_pengambilan belum ada: anggap ambil di toko
+  }
+
   /// Membuka halaman konfirmasi, lalu memuat ulang detail setelah kembali
   /// supaya status terbaru (mis. sudah dikonfirmasi) langsung terlihat.
   Future<void> _bukaKonfirmasi() async {
@@ -173,13 +188,22 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => KonfirmasiPesananPage(
+        builder: (_) => KonfirmasiPage(
           idOrder: _idOrder,
-          statusSaatIni: statusRaw.isEmpty ? '' : _label(statusRaw),
           invoice: _teks(['no_invoice', 'invoice']),
           nama: _teks(['nama_pelanggan', 'nama']),
           tanggal: _tanggalJam(),
           total: _rp(total),
+          statusLabel: statusRaw.isEmpty ? null : _label(statusRaw),
+          dikirim: _dikirim(),
+          onSimpan: (data) => PesananService().konfirmasiPesanan(
+            id: _idOrder,
+            status: data.status.toLowerCase().replaceAll(' ', '_'),
+            namaKurir: data.namaKurir,
+            noHpKurir: data.noHpKurir,
+            estimasiTiba: data.estimasiTiba,
+            catatan: data.pesan,
+          ),
         ),
       ),
     );

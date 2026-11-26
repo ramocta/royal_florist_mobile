@@ -62,6 +62,7 @@ class App extends StatelessWidget {
                 total: (args['total'] ?? 'Rp0').toString(),
                 statusLabel: args['status']?.toString(),
                 dikirim: args['dikirim'] == true,
+                idOrder: args['idOrder'],
               );
               break;
             }

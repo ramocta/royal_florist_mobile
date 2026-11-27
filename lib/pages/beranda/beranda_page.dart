@@ -52,7 +52,10 @@ class _BerandaPageState extends State<BerandaPage> {
     void bukaNotif() => tampilkanNotifikasiDialog(
       context,
       pesanan: d.pesananBaru,
-      onLihatSemua: () => _ke('/status-order'),
+      stokHabis: p.stokHabis,
+      stokMenipis: p.stokMenipis,
+      onLihatPesanan: () => _ke('/status-order'),
+      onLihatStok: () => _ke('/update-stok'),
     );
 
     return Scaffold(
@@ -74,7 +77,7 @@ class _BerandaPageState extends State<BerandaPage> {
                       Muncul(
                         key: const ValueKey('header'),
                         child: BerandaHeader(
-                          jumlahNotif: d.pesananBaru.length,
+                          jumlahNotif: p.jumlahNotif,
                           onNotif: bukaNotif,
                         ),
                       ),
@@ -84,13 +87,15 @@ class _BerandaPageState extends State<BerandaPage> {
                         urutan: 1,
                         child: SalamCard(nama: nama),
                       ),
-                      if (d.pesananBaru.isNotEmpty) ...[
+                      if (p.jumlahNotif > 0) ...[
                         const SizedBox(height: 14),
                         Muncul(
                           key: const ValueKey('baru'),
                           urutan: 1,
                           child: PesananBaruCard(
-                            jumlah: d.pesananBaru.length,
+                            pesanan: d.pesananBaru.length,
+                            stokHabis: p.stokHabis.length,
+                            stokMenipis: p.stokMenipis.length,
                             onTap: bukaNotif,
                           ),
                         ),
